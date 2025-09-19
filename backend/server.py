@@ -326,6 +326,120 @@ class QuantumFlowDetector:
             self.groq_client = Groq(api_key=groq_key)
             logger.info("✅ Initialized Groq AI client for signal analysis")
     
+    async def _get_ai_analysis(self, signal_data: Dict, flow_type: str) -> Dict:
+        """Get comprehensive AI analysis from Groq for signal reasoning"""
+        if not self.groq_client:
+            return {
+                'ai_conviction': 'MODERATE',
+                'market_sentiment': 'NEUTRAL',
+                'technical_reasoning': f'{flow_type} detected based on mathematical analysis',
+                'risk_assessment': 'Standard risk parameters applied',
+                'groq_api_called': False
+            }
+        
+        try:
+            self.groq_call_count += 1
+            self.last_groq_call_time = datetime.utcnow()
+            
+            # Prepare market data context for AI analysis
+            symbol = signal_data.get('symbol', 'UNKNOWN')
+            current_price = signal_data.get('current_price', 0)
+            volume_profile = signal_data.get('volume_profile', {})
+            liquidity_metrics = signal_data.get('liquidity_metrics', {})
+            price_metrics = signal_data.get('price_metrics', {})
+            
+            # Create comprehensive prompt for AI analysis
+            prompt = f"""
+            Analyze this {flow_type} trading signal for {symbol}:
+            
+            MARKET DATA:
+            - Current Price: ${current_price:,.2f}
+            - Buy/Sell Ratio: {volume_profile.get('buy_ratio', 0.5):.2%}
+            - Volume Trend: {price_metrics.get('volume_trend', 1):.2f}x
+            - Price Momentum: {price_metrics.get('momentum', 0):.2%}
+            - Liquidity Spread: {liquidity_metrics.get('spread', 0):.3%}
+            - Order Book Imbalance: {liquidity_metrics.get('imbalance', 0):.2%}
+            - Large Trades Volume: {volume_profile.get('large_trades_volume', 0):,.0f}
+            
+            SIGNAL TYPE: {flow_type}
+            
+            Please provide a concise analysis in exactly this JSON format:
+            {{
+                "market_sentiment": "BULLISH/BEARISH/NEUTRAL",
+                "technical_reasoning": "Brief technical analysis reasoning (max 100 chars)",
+                "risk_assessment": "Risk level and key concerns (max 80 chars)",
+                "ai_conviction": "HIGH/MODERATE/LOW"
+            }}
+            
+            Focus on:
+            1. Market sentiment based on volume and price action
+            2. Technical reasoning for this specific pattern
+            3. Risk assessment and concerns
+            4. Overall conviction level
+            """
+            
+            # Call Groq API
+            response = self.groq_client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": "You are an expert crypto trading analyst. Provide concise, actionable analysis in valid JSON format only."},
+                    {"role": "user", "content": prompt}
+                ],
+                model="llama3-8b-8192",
+                temperature=0.3,
+                max_tokens=200
+            )
+            
+            # Parse AI response
+            ai_content = response.choices[0].message.content.strip()
+            
+            # Try to extract JSON from response
+            try:
+                import json
+                # Find JSON content between braces
+                start_idx = ai_content.find('{')
+                end_idx = ai_content.rfind('}') + 1
+                if start_idx >= 0 and end_idx > start_idx:
+                    json_content = ai_content[start_idx:end_idx]
+                    ai_analysis = json.loads(json_content)
+                else:
+                    raise ValueError("No JSON found")
+                    
+            except (json.JSONDecodeError, ValueError):
+                # Fallback if JSON parsing fails
+                ai_analysis = {
+                    'market_sentiment': 'NEUTRAL',
+                    'technical_reasoning': f'AI analysis for {flow_type} pattern',
+                    'risk_assessment': 'Standard risk parameters',
+                    'ai_conviction': 'MODERATE'
+                }
+            
+            # Add metadata
+            ai_analysis['groq_api_called'] = True
+            ai_analysis['groq_call_timestamp'] = datetime.utcnow().isoformat()
+            
+            logger.info(f"🤖 Groq API call #{self.groq_call_count} for {symbol} {flow_type} - Sentiment: {ai_analysis.get('market_sentiment', 'N/A')}")
+            
+            return ai_analysis
+            
+        except Exception as e:
+            logger.error(f"❌ Groq API call failed: {e}")
+            return {
+                'ai_conviction': 'MODERATE',
+                'market_sentiment': 'NEUTRAL', 
+                'technical_reasoning': f'{flow_type} detected via mathematical analysis',
+                'risk_assessment': 'Standard risk - AI analysis unavailable',
+                'groq_api_called': False,
+                'groq_error': str(e)
+            }
+    
+    def get_groq_api_stats(self) -> Dict:
+        """Get Groq API usage statistics"""
+        return {
+            'total_calls': self.groq_call_count,
+            'last_call_time': self.last_groq_call_time.isoformat(),
+            'calls_per_minute': self.groq_call_count / max(1, (datetime.utcnow() - self.last_groq_call_time).total_seconds() / 60) if self.groq_call_count > 0 else 0
+        }
+
     async def detect_quantum_patterns(self, market_data: Dict) -> List[QuantumFlowSignal]:
         """Main pattern detection method"""
         signals = []
