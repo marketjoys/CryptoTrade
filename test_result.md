@@ -132,6 +132,9 @@ frontend:
         - working: true
         - agent: "main"
         - comment: "COMPLETED: Added comprehensive null checks before using .toFixed() and other methods. All market data properties now safely handle null/undefined values with Number() conversion and fallbacks."
+        - working: true
+        - agent: "main"
+        - comment: "CRITICAL FIX APPLIED: Fixed conditional logic that was causing persistent 'Loading...' states. Changed from checking truthiness (price > 0) to checking existence (price !== undefined && price !== null). Now properly displays $0.00 instead of Loading... when data is available but price is 0. Market data now displays actual values instead of being stuck in loading state."
         
   - task: "Add Error Boundaries for MarketData component"
     implemented: true
