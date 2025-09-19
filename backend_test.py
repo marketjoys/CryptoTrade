@@ -779,29 +779,8 @@ def main():
     
     tester = QuantumFlowAPITester()
     
-    # Run all tests
-    print("\n🔧 Testing Core API Endpoints...")
-    tester.test_root_endpoint()
-    
-    print("\n📊 Testing Data Endpoints...")
-    tester.test_signals_endpoint()
-    tester.test_active_signals_endpoint()
-    tester.test_performance_endpoint()
-    tester.test_config_endpoint()
-    
-    print("\n💹 Testing Market Data...")
-    tester.test_market_data_endpoint()
-    tester.test_xrp_market_data_endpoint()
-    
-    print("\n🤖 Testing Groq AI Integration...")
-    tester.test_groq_stats_endpoint()
-    
-    print("\n🚫 Testing Error Handling...")
-    tester.test_market_data_invalid_symbol()
-    tester.test_invalid_endpoint()
-    
-    print("\n⚙️ Testing Configuration Updates...")
-    tester.test_config_update()
+    # Run comprehensive test suite for Groq optimization and portfolio functionality
+    tester.run_comprehensive_test_suite()
     
     # Print final summary
     tester.print_summary()
