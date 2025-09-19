@@ -312,17 +312,19 @@ class RealTimeDataCollector:
             }
 
 class QuantumFlowDetector:
-    """Enhanced pattern detection engine"""
+    """Enhanced pattern detection engine with AI integration"""
     
     def __init__(self):
         self.groq_client = None
         self.whale_threshold = float(os.environ.get('WHALE_THRESHOLD', 100000))
+        self.groq_call_count = 0
+        self.last_groq_call_time = datetime.utcnow()
         
         # Initialize AI client
         groq_key = os.environ.get('GROQ_API_KEY')
         if groq_key:
             self.groq_client = Groq(api_key=groq_key)
-            logger.info("✅ Initialized Groq AI client")
+            logger.info("✅ Initialized Groq AI client for signal analysis")
     
     async def detect_quantum_patterns(self, market_data: Dict) -> List[QuantumFlowSignal]:
         """Main pattern detection method"""
