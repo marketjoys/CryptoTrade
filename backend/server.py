@@ -211,7 +211,13 @@ class RealTimeDataCollector:
             }
         except Exception as e:
             logger.error(f"Error calculating liquidity metrics: {e}")
-            return {}
+            return {
+                'spread': 0,
+                'bid_depth': 0,
+                'ask_depth': 0,
+                'total_depth': 0,
+                'imbalance': 0
+            }
     
     def _calculate_volume_profile(self, trades: List) -> Dict:
         """Calculate volume profile from trades"""
