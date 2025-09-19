@@ -104,6 +104,16 @@ class TradingConfig(BaseModel):
     trading_mode: str = "sandbox"  # or "live"
     update_interval: int = 30
 
+class AutoTraderConfig(BaseModel):
+    enabled: bool = False
+    min_confidence: float = 0.9  # Higher threshold for auto-trading
+    max_positions: int = 3  # Lower limit for auto-trading
+    risk_per_trade: float = 0.015  # Lower risk for auto-trading (1.5%)
+    max_portfolio_risk: float = 0.05  # Max 5% total portfolio at risk
+    profit_target_multiplier: float = 1.1  # Target 10% profit minimum
+    stop_loss_multiplier: float = 0.95  # 5% stop loss
+    cooldown_minutes: int = 30  # Wait 30 minutes between auto-trades
+
 class PerformanceStats(BaseModel):
     total_signals: int
     profitable_signals: int
