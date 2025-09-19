@@ -227,10 +227,8 @@ def main():
     print("\n💹 Testing Market Data...")
     tester.test_market_data_endpoint()
     
-    print("\n⚙️ Testing Configuration Updates...")
-    tester.test_config_update()
-    
     print("\n🚫 Testing Error Handling...")
+    tester.test_market_data_invalid_symbol()
     tester.test_invalid_endpoint()
     
     # Print final summary
