@@ -154,11 +154,11 @@ class RealTimeDataCollector:
             
             return {
                 'symbol': symbol,
-                'current_price': ticker.get('last', 0) if not isinstance(ticker, Exception) else 0,
-                'ticker': ticker if not isinstance(ticker, Exception) else {},
-                'orderbook': orderbook if not isinstance(orderbook, Exception) else {},
-                'trades': trades if not isinstance(trades, Exception) else [],
-                'ohlcv': ohlcv if not isinstance(ohlcv, Exception) else [],
+                'current_price': ticker.get('last', 0) if ticker else 0,
+                'ticker': ticker,
+                'orderbook': orderbook,
+                'trades': trades,
+                'ohlcv': ohlcv,
                 'liquidity_metrics': liquidity_metrics,
                 'volume_profile': volume_profile,
                 'price_metrics': price_metrics,
