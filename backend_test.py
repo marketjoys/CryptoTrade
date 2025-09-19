@@ -133,6 +133,14 @@ class QuantumFlowAPITester:
         """Test the market data endpoint"""
         return self.run_test("Get Market Data BTC-USD", "GET", "market-data/BTC-USD", timeout=15)
     
+    def test_xrp_market_data_endpoint(self):
+        """Test the XRP market data endpoint (new XRP tracking)"""
+        return self.run_test("Get Market Data XRP-USD", "GET", "market-data/XRP-USD", timeout=15)
+    
+    def test_groq_stats_endpoint(self):
+        """Test the new Groq API statistics endpoint"""
+        return self.run_test("Get Groq API Stats", "GET", "groq-stats")
+    
     def test_market_data_invalid_symbol(self):
         """Test market data endpoint with invalid symbol - should return structured error data"""
         success, response = self.run_test("Get Market Data Invalid Symbol", "GET", "market-data/INVALID-SYMBOL", 200, timeout=15)
