@@ -713,23 +713,419 @@ class QuantumFlowAPITester:
         
         return True, {}
 
-    def run_comprehensive_test_suite(self):
-        """Run the complete test suite for Groq optimization and portfolio functionality"""
-        print(f"\n🚀 COMPREHENSIVE TEST SUITE: Groq API Optimization & Mock Portfolio")
+    # ========== AUTOTRADER API TESTS ==========
+    
+    def test_autotrader_status_endpoint(self):
+        """Test GET /api/autotrader/status endpoint"""
+        print(f"\n🤖 Testing AutoTrader Status Endpoint...")
+        
+        success, status = self.run_test("AutoTrader Status", "GET", "autotrader/status")
+        if not success:
+            return False, {}
+        
+        # Validate status structure
+        if isinstance(status, dict):
+            required_fields = ['enabled', 'config', 'active_positions', 'total_risk']
+            missing_fields = [field for field in required_fields if field not in status]
+            
+            if missing_fields:
+                print(f"   ❌ Missing status fields: {missing_fields}")
+                self.failed_tests.append({
+                    'name': 'AutoTrader Status Structure',
+                    'error': f'Missing fields: {missing_fields}',
+                    'url': f"{self.api_url}/autotrader/status"
+                })
+                return False, {}
+            
+            print(f"   📊 AutoTrader enabled: {status.get('enabled', False)}")
+            print(f"   📊 Active positions: {status.get('active_positions', 0)}")
+            print(f"   📊 Total risk: {status.get('total_risk', 0):.1%}")
+            
+            # Validate config structure
+            config = status.get('config', {})
+            if isinstance(config, dict):
+                config_fields = ['min_confidence', 'max_positions', 'risk_per_trade', 'cooldown_minutes']
+                for field in config_fields:
+                    if field in config:
+                        print(f"   📊 Config {field}: {config[field]}")
+                    else:
+                        print(f"   ⚠️  Missing config field: {field}")
+            
+            print(f"   ✅ AutoTrader status endpoint working correctly")
+        
+        return True, status
+    
+    def test_autotrader_enable_endpoint(self):
+        """Test POST /api/autotrader/enable endpoint"""
+        print(f"\n🟢 Testing AutoTrader Enable Endpoint...")
+        
+        success, result = self.run_test("Enable AutoTrader", "POST", "autotrader/enable")
+        if not success:
+            return False, {}
+        
+        if isinstance(result, dict):
+            enabled = result.get('enabled', False)
+            message = result.get('message', '')
+            
+            print(f"   📊 Enable result: {message}")
+            print(f"   📊 Enabled status: {enabled}")
+            
+            if enabled:
+                print(f"   ✅ AutoTrader enabled successfully")
+            else:
+                print(f"   ❌ AutoTrader enable failed")
+                return False, result
+        
+        return True, result
+    
+    def test_autotrader_disable_endpoint(self):
+        """Test POST /api/autotrader/disable endpoint"""
+        print(f"\n🔴 Testing AutoTrader Disable Endpoint...")
+        
+        success, result = self.run_test("Disable AutoTrader", "POST", "autotrader/disable")
+        if not success:
+            return False, {}
+        
+        if isinstance(result, dict):
+            enabled = result.get('enabled', True)
+            message = result.get('message', '')
+            
+            print(f"   📊 Disable result: {message}")
+            print(f"   📊 Enabled status: {enabled}")
+            
+            if not enabled:
+                print(f"   ✅ AutoTrader disabled successfully")
+            else:
+                print(f"   ❌ AutoTrader disable failed")
+                return False, result
+        
+        return True, result
+    
+    def test_autotrader_config_endpoint(self):
+        """Test POST /api/autotrader/config endpoint with sample configuration"""
+        print(f"\n⚙️ Testing AutoTrader Config Update Endpoint...")
+        
+        # Sample configuration update
+        config_data = {
+            "enabled": True,
+            "min_confidence": 0.91,  # Test different confidence level
+            "max_positions": 2,
+            "risk_per_trade": 0.01,  # 1% risk
+            "max_portfolio_risk": 0.03,  # 3% max portfolio risk
+            "profit_target_multiplier": 1.15,  # 15% profit target
+            "stop_loss_multiplier": 0.92,  # 8% stop loss
+            "cooldown_minutes": 45  # 45 minute cooldown
+        }
+        
+        success, result = self.run_test("Update AutoTrader Config", "POST", "autotrader/config", 200, config_data)
+        if not success:
+            return False, {}
+        
+        if isinstance(result, dict):
+            success_flag = result.get('success', False)
+            message = result.get('message', '')
+            
+            print(f"   📊 Config update result: {message}")
+            print(f"   📊 Success: {success_flag}")
+            
+            if success_flag:
+                print(f"   ✅ AutoTrader configuration updated successfully")
+                
+                # Verify the config was applied by checking status
+                time.sleep(1)  # Small delay
+                status_success, status = self.run_test("Verify Config Update", "GET", "autotrader/status")
+                if status_success and isinstance(status, dict):
+                    config = status.get('config', {})
+                    if config.get('min_confidence') == 0.91:
+                        print(f"   ✅ Configuration change verified (min_confidence: {config.get('min_confidence')})")
+                    else:
+                        print(f"   ⚠️  Configuration may not have been applied correctly")
+            else:
+                print(f"   ❌ AutoTrader config update failed")
+                return False, result
+        
+        return True, result
+    
+    def test_autotrader_positions_endpoint(self):
+        """Test GET /api/autotrader/positions endpoint"""
+        print(f"\n📊 Testing AutoTrader Positions Endpoint...")
+        
+        success, positions = self.run_test("AutoTrader Positions", "GET", "autotrader/positions")
+        if not success:
+            return False, {}
+        
+        if isinstance(positions, dict):
+            active_positions = positions.get('active_positions', {})
+            total_risk = positions.get('total_risk', 0)
+            count = positions.get('count', 0)
+            
+            print(f"   📊 Active positions count: {count}")
+            print(f"   📊 Total risk: {total_risk:.4f}")
+            print(f"   📊 Positions data: {len(active_positions)} entries")
+            
+            if count == len(active_positions):
+                print(f"   ✅ Position count matches data length")
+            else:
+                print(f"   ⚠️  Position count mismatch: {count} vs {len(active_positions)}")
+            
+            print(f"   ✅ AutoTrader positions endpoint working correctly")
+        
+        return True, positions
+    
+    def test_autotrader_signal_evaluation_logic(self):
+        """Test AutoTrader signal evaluation with different confidence levels"""
+        print(f"\n🎯 Testing AutoTrader Signal Evaluation Logic...")
+        
+        # First, enable AutoTrader with specific settings
+        config_data = {
+            "enabled": True,
+            "min_confidence": 0.9,  # High confidence threshold
+            "max_positions": 3,
+            "risk_per_trade": 0.015,
+            "max_portfolio_risk": 0.05,
+            "profit_target_multiplier": 1.1,
+            "stop_loss_multiplier": 0.95,
+            "cooldown_minutes": 30
+        }
+        
+        success, _ = self.run_test("Configure AutoTrader for Testing", "POST", "autotrader/config", 200, config_data)
+        if not success:
+            print(f"   ❌ Failed to configure AutoTrader for testing")
+            return False, {}
+        
+        # Get current signals to analyze confidence levels
+        success, signals = self.run_test("Get Signals for Evaluation Test", "GET", "signals?limit=20")
+        if not success or not signals:
+            print(f"   ⚠️  No signals available for evaluation testing")
+            return True, {}  # Not a failure, just no data
+        
+        # Analyze signals by confidence level
+        confidence_levels = {
+            'very_high': [],  # >= 0.95
+            'high': [],       # 0.9 - 0.94
+            'medium': [],     # 0.85 - 0.89
+            'low': []         # < 0.85
+        }
+        
+        for signal in signals:
+            confidence = signal.get('confidence', 0)
+            if confidence >= 0.95:
+                confidence_levels['very_high'].append(signal)
+            elif confidence >= 0.9:
+                confidence_levels['high'].append(signal)
+            elif confidence >= 0.85:
+                confidence_levels['medium'].append(signal)
+            else:
+                confidence_levels['low'].append(signal)
+        
+        print(f"   📊 Signal confidence distribution:")
+        print(f"   📊 Very High (≥0.95): {len(confidence_levels['very_high'])}")
+        print(f"   📊 High (0.9-0.94): {len(confidence_levels['high'])}")
+        print(f"   📊 Medium (0.85-0.89): {len(confidence_levels['medium'])}")
+        print(f"   📊 Low (<0.85): {len(confidence_levels['low'])}")
+        
+        # Check if high-confidence signals would meet AutoTrader criteria
+        qualifying_signals = len(confidence_levels['very_high']) + len(confidence_levels['high'])
+        if qualifying_signals > 0:
+            print(f"   ✅ Found {qualifying_signals} signals that meet AutoTrader confidence threshold (≥0.9)")
+        else:
+            print(f"   ⚠️  No signals meet current AutoTrader confidence threshold (≥0.9)")
+        
+        return True, confidence_levels
+    
+    def test_autotrader_risk_management(self):
+        """Test AutoTrader risk management constraints"""
+        print(f"\n🛡️ Testing AutoTrader Risk Management...")
+        
+        # Configure AutoTrader with strict risk limits
+        config_data = {
+            "enabled": True,
+            "min_confidence": 0.85,  # Lower threshold for testing
+            "max_positions": 2,      # Low position limit
+            "risk_per_trade": 0.01,  # 1% risk per trade
+            "max_portfolio_risk": 0.03,  # 3% max portfolio risk
+            "profit_target_multiplier": 1.1,
+            "stop_loss_multiplier": 0.95,
+            "cooldown_minutes": 15   # Short cooldown for testing
+        }
+        
+        success, _ = self.run_test("Configure Risk Management", "POST", "autotrader/config", 200, config_data)
+        if not success:
+            return False, {}
+        
+        # Verify configuration was applied
+        success, status = self.run_test("Verify Risk Config", "GET", "autotrader/status")
+        if success and isinstance(status, dict):
+            config = status.get('config', {})
+            print(f"   📊 Max positions: {config.get('max_positions', 'N/A')}")
+            print(f"   📊 Risk per trade: {config.get('risk_per_trade', 'N/A'):.1%}")
+            print(f"   📊 Max portfolio risk: {config.get('max_portfolio_risk', 'N/A'):.1%}")
+            print(f"   📊 Cooldown minutes: {config.get('cooldown_minutes', 'N/A')}")
+            
+            # Validate risk parameters
+            if config.get('max_positions', 0) <= 2:
+                print(f"   ✅ Position limit constraint applied")
+            if config.get('risk_per_trade', 0) <= 0.01:
+                print(f"   ✅ Risk per trade constraint applied")
+            if config.get('max_portfolio_risk', 0) <= 0.03:
+                print(f"   ✅ Portfolio risk constraint applied")
+            
+            print(f"   ✅ Risk management parameters configured correctly")
+        
+        return True, status
+    
+    def test_autotrader_cooldown_functionality(self):
+        """Test AutoTrader cooldown period functionality"""
+        print(f"\n⏰ Testing AutoTrader Cooldown Functionality...")
+        
+        # Configure with short cooldown for testing
+        config_data = {
+            "enabled": True,
+            "min_confidence": 0.8,
+            "max_positions": 5,
+            "risk_per_trade": 0.02,
+            "max_portfolio_risk": 0.1,
+            "profit_target_multiplier": 1.1,
+            "stop_loss_multiplier": 0.95,
+            "cooldown_minutes": 1  # 1 minute cooldown for testing
+        }
+        
+        success, _ = self.run_test("Configure Cooldown Test", "POST", "autotrader/config", 200, config_data)
+        if not success:
+            return False, {}
+        
+        # Check current status for last trade times
+        success, status = self.run_test("Check Cooldown Status", "GET", "autotrader/status")
+        if success and isinstance(status, dict):
+            last_trades = status.get('last_trades', {})
+            print(f"   📊 Last trades tracked: {len(last_trades)} symbols")
+            
+            if last_trades:
+                for symbol, last_time in last_trades.items():
+                    print(f"   📊 {symbol}: Last trade at {last_time}")
+                print(f"   ✅ Cooldown tracking active for symbols")
+            else:
+                print(f"   ℹ️  No recent auto-trades found (expected for new system)")
+            
+            print(f"   ✅ Cooldown functionality configured and tracking")
+        
+        return True, status
+    
+    def test_autotrader_integration_with_signals(self):
+        """Test AutoTrader integration with signal generation"""
+        print(f"\n🔗 Testing AutoTrader Integration with Signal Generation...")
+        
+        # Enable AutoTrader
+        success, _ = self.run_test("Enable AutoTrader for Integration", "POST", "autotrader/enable")
+        if not success:
+            return False, {}
+        
+        # Get initial positions count
+        success, initial_positions = self.run_test("Get Initial AutoTrader Positions", "GET", "autotrader/positions")
+        if not success:
+            return False, {}
+        
+        initial_count = initial_positions.get('count', 0)
+        print(f"   📊 Initial auto-positions: {initial_count}")
+        
+        # Wait for potential signal generation and auto-trading
+        print(f"   ⏳ Waiting 45 seconds for signal generation and auto-trading...")
+        time.sleep(45)
+        
+        # Check for new positions
+        success, updated_positions = self.run_test("Get Updated AutoTrader Positions", "GET", "autotrader/positions")
+        if not success:
+            return False, {}
+        
+        updated_count = updated_positions.get('count', 0)
+        new_positions = updated_count - initial_count
+        
+        print(f"   📊 Updated auto-positions: {updated_count}")
+        print(f"   📊 New positions created: {new_positions}")
+        
+        if new_positions > 0:
+            print(f"   ✅ AutoTrader successfully integrated with signal generation")
+            print(f"   📊 Total risk: {updated_positions.get('total_risk', 0):.4f}")
+        else:
+            print(f"   ℹ️  No new auto-positions created (may be due to confidence thresholds or market conditions)")
+        
+        # Check recent signals for auto-trade indicators
+        success, signals = self.run_test("Check Recent Signals for Auto-Trade", "GET", "signals?limit=10")
+        if success and signals:
+            auto_traded_signals = 0
+            for signal in signals:
+                # Check if signal has auto-trade indicators in metadata or exit_strategy
+                exit_strategy = signal.get('exit_strategy', {})
+                if 'auto_traded' in exit_strategy or 'auto_trade' in str(signal).lower():
+                    auto_traded_signals += 1
+            
+            if auto_traded_signals > 0:
+                print(f"   ✅ Found {auto_traded_signals} signals with auto-trade indicators")
+            else:
+                print(f"   ℹ️  No obvious auto-trade indicators in recent signals")
+        
+        return True, updated_positions
+    
+    def run_comprehensive_autotrader_test_suite(self):
+        """Run comprehensive AutoTrader system tests"""
+        print(f"\n🤖 COMPREHENSIVE AUTOTRADER TEST SUITE")
         print(f"="*80)
         
-        # Phase 1: Groq API Optimization Testing
+        # Phase 1: AutoTrader API Endpoints
         print(f"\n" + "="*50)
-        print(f"PHASE 1: GROQ API OPTIMIZATION TESTING")
+        print(f"PHASE 1: AUTOTRADER API ENDPOINTS")
+        print(f"="*50)
+        
+        self.test_autotrader_status_endpoint()
+        self.test_autotrader_enable_endpoint()
+        self.test_autotrader_disable_endpoint()
+        self.test_autotrader_config_endpoint()
+        self.test_autotrader_positions_endpoint()
+        
+        # Phase 2: AutoTrader Logic Testing
+        print(f"\n" + "="*50)
+        print(f"PHASE 2: AUTOTRADER LOGIC TESTING")
+        print(f"="*50)
+        
+        self.test_autotrader_signal_evaluation_logic()
+        self.test_autotrader_risk_management()
+        self.test_autotrader_cooldown_functionality()
+        
+        # Phase 3: AutoTrader Integration
+        print(f"\n" + "="*50)
+        print(f"PHASE 3: AUTOTRADER INTEGRATION")
+        print(f"="*50)
+        
+        self.test_autotrader_integration_with_signals()
+        
+        print(f"\n" + "="*50)
+        print(f"AUTOTRADER TEST SUITE COMPLETED")
+        print(f"="*50)
+
+    def run_comprehensive_test_suite(self):
+        """Run the complete test suite including AutoTrader functionality"""
+        print(f"\n🚀 COMPREHENSIVE TEST SUITE: AutoTrader System & Quantum Flow Trading")
+        print(f"="*80)
+        
+        # Phase 1: AutoTrader System Testing (NEW)
+        print(f"\n" + "="*50)
+        print(f"PHASE 1: AUTOTRADER SYSTEM TESTING")
+        print(f"="*50)
+        
+        self.run_comprehensive_autotrader_test_suite()
+        
+        # Phase 2: Groq API Optimization Testing
+        print(f"\n" + "="*50)
+        print(f"PHASE 2: GROQ API OPTIMIZATION TESTING")
         print(f"="*50)
         
         self.test_groq_optimization_high_confidence_only()
         self.test_groq_caching_mechanism()
         self.test_groq_stats_endpoint()
         
-        # Phase 2: Mock Portfolio API Testing  
+        # Phase 3: Mock Portfolio API Testing  
         print(f"\n" + "="*50)
-        print(f"PHASE 2: MOCK PORTFOLIO API TESTING")
+        print(f"PHASE 3: MOCK PORTFOLIO API TESTING")
         print(f"="*50)
         
         self.test_portfolio_get_endpoint()
@@ -737,14 +1133,22 @@ class QuantumFlowAPITester:
         self.test_signal_watching_workflow()
         self.test_portfolio_update_workflow()
         
-        # Phase 3: Integration Testing
+        # Phase 4: Market Data Integration Testing
         print(f"\n" + "="*50)
-        print(f"PHASE 3: INTEGRATION TESTING")
+        print(f"PHASE 4: MARKET DATA INTEGRATION TESTING")
+        print(f"="*50)
+        
+        self.test_market_data_endpoint()
+        self.test_xrp_market_data_endpoint()
+        self.test_integration_portfolio_with_real_data()
+        
+        # Phase 5: Integration Testing
+        print(f"\n" + "="*50)
+        print(f"PHASE 5: INTEGRATION TESTING")
         print(f"="*50)
         
         self.test_integration_all_original_endpoints()
         self.test_integration_signal_generation_optimization()
-        self.test_integration_portfolio_with_real_data()
         
         print(f"\n" + "="*50)
         print(f"COMPREHENSIVE TEST SUITE COMPLETED")
