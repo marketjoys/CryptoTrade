@@ -701,14 +701,16 @@ class QuantumFlowDetector:
             
             # Detect volume anomalies
             if buy_ratio > 0.75 and volume_trend > 2.0 and large_trades_ratio > 0.4:
-                # Get AI analysis for this signal
-                ai_analysis = await self._get_ai_analysis(data, "VOLUME_ANOMALY")
+                confidence = 0.78
+                
+                # Get AI analysis for this signal - only if confidence is high enough  
+                ai_analysis = await self._get_ai_analysis(data, "VOLUME_ANOMALY", confidence)
                 
                 return QuantumFlowSignal(
                     symbol=data.get('symbol', 'UNKNOWN'),
                     timestamp=datetime.utcnow(),
                     flow_type="VOLUME_ANOMALY",
-                    confidence=0.78,
+                    confidence=confidence,
                     entry_price=data.get('current_price', 0),
                     target_multiplier=1.04 + min(0.08, (buy_ratio - 0.75) * 0.4),
                     risk_factor=0.08,
