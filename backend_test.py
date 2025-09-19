@@ -106,8 +106,52 @@ class QuantumFlowAPITester:
                 print(f"   ⚠️  Response contains raw exception data")
                 return False
         
+        # Specific validations for different endpoints
+        if endpoint_name == "Get Signals":
+            self.validate_signals_response(response)
+        elif endpoint_name == "Get Configuration":
+            self.validate_config_response(response)
+        elif endpoint_name == "Get Groq API Stats":
+            self.validate_groq_stats_response(response)
+        
         print(f"   ✅ Response structure is well-formed")
         return True
+    
+    def validate_signals_response(self, response):
+        """Validate signals response contains AI analysis data"""
+        if isinstance(response, list) and len(response) > 0:
+            signal = response[0]
+            if isinstance(signal, dict):
+                # Check for AI analysis in exit_strategy
+                exit_strategy = signal.get('exit_strategy', {})
+                if 'groq_analysis' in exit_strategy:
+                    print(f"   ✅ Signal contains Groq AI analysis data")
+                    groq_data = exit_strategy['groq_analysis']
+                    if 'market_sentiment' in groq_data and 'ai_conviction' in groq_data:
+                        print(f"   ✅ AI analysis includes market sentiment and conviction")
+                else:
+                    print(f"   ⚠️  Signal missing Groq AI analysis data")
+    
+    def validate_config_response(self, response):
+        """Validate config response includes XRP in symbols"""
+        if isinstance(response, dict) and 'symbols' in response:
+            symbols = response['symbols']
+            if 'XRP-USD' in symbols:
+                print(f"   ✅ XRP-USD found in tracked symbols")
+            else:
+                print(f"   ⚠️  XRP-USD not found in symbols: {symbols}")
+    
+    def validate_groq_stats_response(self, response):
+        """Validate Groq stats response structure"""
+        if isinstance(response, dict):
+            required_fields = ['total_calls', 'last_call_time', 'calls_per_minute']
+            missing_fields = [field for field in required_fields if field not in response]
+            if missing_fields:
+                print(f"   ⚠️  Missing Groq stats fields: {missing_fields}")
+            else:
+                print(f"   ✅ Groq stats contains all required fields")
+                print(f"   📊 Total API calls: {response.get('total_calls', 0)}")
+                print(f"   📊 Calls per minute: {response.get('calls_per_minute', 0):.2f}")
 
     def test_root_endpoint(self):
         """Test the root API endpoint"""
