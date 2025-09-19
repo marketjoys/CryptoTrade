@@ -561,10 +561,10 @@ class QuantumFlowDetector:
                 large_trades_volume / total_volume > 0.3 and
                 liquidity_metrics.get('imbalance', 0) > 0.2):
                 
-                # Get AI analysis for this signal
-                ai_analysis = await self._get_ai_analysis(data, "WHALE_ACCUMULATION")
-                
                 confidence = min(0.95, 0.7 + buy_ratio * 0.3)
+                
+                # Get AI analysis for this signal - only if confidence is high enough
+                ai_analysis = await self._get_ai_analysis(data, "WHALE_ACCUMULATION", confidence)
                 
                 return QuantumFlowSignal(
                     symbol=data.get('symbol', 'UNKNOWN'),
