@@ -94,125 +94,165 @@ const Dashboard = ({ signals, activeSignals, performance, marketData, isConnecte
         </p>
       </div>
 
+      {/* Navigation Tabs */}
+      <div className="mb-8">
+        <div className="flex space-x-4 border-b border-gray-700">
+          <button
+            onClick={() => setCurrentView('overview')}
+            className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
+              currentView === 'overview'
+                ? 'border-blue-500 text-blue-400'
+                : 'border-transparent text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            📊 Overview
+          </button>
+          <button
+            onClick={() => setCurrentView('charts')}
+            className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
+              currentView === 'charts'
+                ? 'border-blue-500 text-blue-400'
+                : 'border-transparent text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            📈 Live Charts
+          </button>
+          <button
+            onClick={() => setCurrentView('portfolio')}
+            className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
+              currentView === 'portfolio'
+                ? 'border-blue-500 text-blue-400'
+                : 'border-transparent text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            💼 Portfolio
+          </button>
+        </div>
+      </div>
+
       {/* Status Banner */}
       <div className={`mb-8 p-4 rounded-lg border ${
         isConnected 
           ? 'bg-green-900/20 border-green-600 text-green-100' 
           : 'bg-red-900/20 border-red-600 text-red-100'
       }`}>
-        <div className="flex items-center">
-          <div className={`w-3 h-3 rounded-full mr-3 ${
-            isConnected ? 'bg-green-400' : 'bg-red-400'
-          }`}></div>
+        <div className="flex items-center space-x-2">
+          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'} animate-pulse`}></div>
           <span className="font-medium">
-            {isConnected 
-              ? '🔴 System is LIVE - Monitoring markets in real-time' 
-              : '⚠️ System disconnected - Attempting to reconnect...'}
+            {isConnected ? '🟢 System Online' : '🔴 Connection Lost'}
+          </span>
+          <span className="text-sm opacity-75">
+            | {stats.totalSignals} Total Signals | {stats.activeSignals} Active | {stats.todaySignals} Today
           </span>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard
-          title="Total Signals"
-          value={stats.totalSignals}
-          icon="📊"
-          color="blue"
-        />
-        <StatCard
-          title="Active Signals"
-          value={stats.activeSignals}
-          icon="🚀"
-          color="green"
-        />
-        <StatCard
-          title="Today's Signals"
-          value={stats.todaySignals}
-          icon="⚡"
-          color="purple"
-        />
-        <StatCard
-          title="Win Rate"
-          value={`${(stats.winRate * 100).toFixed(1)}%`}
-          icon="🎯"
-          color="yellow"
-        />
-      </div>
+      {/* Content Based on Selected View */}
+      {currentView === 'overview' && (
+        <>
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 text-center">
+              <div className="text-3xl font-bold text-blue-400 mb-2">{stats.totalSignals}</div>
+              <div className="text-sm text-gray-400">Total Signals</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 text-center">
+              <div className="text-3xl font-bold text-green-400 mb-2">{stats.activeSignals}</div>
+              <div className="text-sm text-gray-400">Active Now</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 text-center">
+              <div className="text-3xl font-bold text-yellow-400 mb-2">{stats.todaySignals}</div>
+              <div className="text-sm text-gray-400">Today</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 text-center">
+              <div className="text-3xl font-bold text-purple-400 mb-2">{(stats.winRate * 100).toFixed(1)}%</div>
+              <div className="text-sm text-gray-400">Win Rate</div>
+            </div>
+          </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Recent Signals */}
-        <div className="lg:col-span-2">
-          <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">
-                🔥 Latest Signals
-              </h2>
-              <div className="text-sm text-gray-400">
-                Last {recentSignals.length} signals
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Market Overview */}
+              <MarketOverview marketData={marketData} />
+              
+              {/* Performance */}
+              <PerformanceCard performance={performance} />
+            </div>
+
+            {/* Right Sidebar */}
+            <div className="space-y-8">
+              {/* Groq Stats */}
+              <GroqStats />
+              
+              {/* Recent Signals */}
+              <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">🔥 Recent Signals</h3>
+                <div className="space-y-4">
+                  {recentSignals.length > 0 ? (
+                    recentSignals.map((signal) => (
+                      <SignalCard 
+                        key={signal.id} 
+                        signal={signal} 
+                        showActions={true}
+                        onFollowSignal={handleFollowSignal}
+                        onWatchSignal={handleWatchSignal}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-center py-4">
+                      <div className="text-gray-400 mb-2">📡</div>
+                      <div className="text-sm text-gray-400">Scanning for signals...</div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            
-            {recentSignals.length > 0 ? (
-              <div className="space-y-4">
-                {recentSignals.map((signal) => (
-                  <SignalCard key={signal.id} signal={signal} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-400">
-                <div className="text-4xl mb-4">⏳</div>
-                <p>No signals detected yet. System is analyzing markets...</p>
-              </div>
-            )}
           </div>
-        </div>
+        </>
+      )}
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Performance Card */}
-          <PerformanceCard performance={performance} />
+      {currentView === 'charts' && (
+        <div className="space-y-8">
+          <TradingChart 
+            symbol={selectedSymbol} 
+            signals={signals}
+            onSymbolChange={setSelectedSymbol}
+          />
           
-          {/* Groq AI Stats */}
-          <GroqStats />
-          
-          {/* Market Overview */}
-          <MarketOverview marketData={marketData} config={config} />
-          
-          {/* Active Signals Summary */}
+          {/* Signal Summary for Selected Symbol */}
           <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
             <h3 className="text-lg font-semibold text-white mb-4">
-              🎯 Active Positions
+              📊 {selectedSymbol} Signal History
             </h3>
-            {activeSignals.length > 0 ? (
-              <div className="space-y-3">
-                {activeSignals.slice(0, 3).map((signal) => (
-                  <div key={signal.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-                    <div>
-                      <div className="font-medium text-white">{signal.symbol}</div>
-                      <div className="text-xs text-gray-400">{signal.flow_type}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-green-400">
-                        {(signal.confidence * 100).toFixed(0)}%
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {signal.target_multiplier.toFixed(2)}x
-                      </div>
-                    </div>
-                  </div>
+            <div className="space-y-4">
+              {signals
+                .filter(signal => signal.symbol === selectedSymbol)
+                .slice(0, 5)
+                .map((signal) => (
+                  <SignalCard 
+                    key={signal.id} 
+                    signal={signal} 
+                    showActions={true}
+                    onFollowSignal={handleFollowSignal}
+                    onWatchSignal={handleWatchSignal}
+                  />
                 ))}
-              </div>
-            ) : (
-              <div className="text-center py-4 text-gray-400">
-                <div className="text-2xl mb-2">💤</div>
-                <p className="text-sm">No active positions</p>
-              </div>
-            )}
+              {signals.filter(signal => signal.symbol === selectedSymbol).length === 0 && (
+                <div className="text-center py-8">
+                  <div className="text-gray-400 mb-2">🔍</div>
+                  <div className="text-sm text-gray-400">No signals found for {selectedSymbol}</div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {currentView === 'portfolio' && (
+        <PortfolioDashboard />
+      )}
     </div>
   );
 };
