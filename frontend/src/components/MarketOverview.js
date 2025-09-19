@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
-const MarketOverview = ({ marketData }) => {
-  const symbols = ['BTC-USD', 'ETH-USD', 'SOL-USD', 'XRP-USD'];
+const MarketOverview = ({ marketData, config }) => {
+  const symbols = config?.symbols || ['BTC-USD', 'ETH-USD', 'SOL-USD', 'XRP-USD'];
   const [loadingStates, setLoadingStates] = useState({});
   const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
 
