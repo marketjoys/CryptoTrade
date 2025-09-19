@@ -242,11 +242,27 @@ const SignalCard = ({ signal, showActions = false, onFollowSignal, onWatchSignal
       {showActions && signal.status === 'ACTIVE' && (
         <div className="border-t border-gray-600 pt-3 mt-3">
           <div className="flex space-x-2">
-            <button className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded text-sm font-medium transition-colors">
-              🚀 Follow Signal
+            <button 
+              onClick={handleFollowSignal}
+              disabled={isFollowing}
+              className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
+                isFollowing 
+                  ? 'bg-gray-500 cursor-not-allowed text-gray-300' 
+                  : 'bg-green-600 hover:bg-green-700 text-white'
+              }`}
+            >
+              {isFollowing ? '⏳ Following...' : '🚀 Follow Signal'}
             </button>
-            <button className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded text-sm font-medium transition-colors">
-              👁️ Watch
+            <button 
+              onClick={handleWatchSignal}
+              disabled={isWatching}
+              className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
+                isWatching 
+                  ? 'bg-gray-500 cursor-not-allowed text-gray-300'
+                  : 'bg-gray-600 hover:bg-gray-700 text-white'
+              }`}
+            >
+              {isWatching ? '⏳ Watching...' : '👁️ Watch'}
             </button>
           </div>
         </div>
