@@ -1268,6 +1268,54 @@ async def get_groq_stats():
         return stats
     return {"total_calls": 0, "last_call_time": None, "calls_per_minute": 0}
 
+@api_router.get("/portfolio")
+async def get_portfolio(user_id: str = "demo_user"):
+    """Get user's mock portfolio"""
+    if portfolio_manager:
+        portfolio = await portfolio_manager.get_or_create_portfolio(user_id)
+        return portfolio
+    raise HTTPException(status_code=500, detail="Portfolio manager not available")
+
+@api_router.post("/portfolio/follow/{signal_id}")
+async def follow_signal(signal_id: str, user_id: str = "demo_user"):
+    """Follow a signal by creating a mock position"""
+    if not portfolio_manager:
+        raise HTTPException(status_code=500, detail="Portfolio manager not available")
+    
+    # Get the signal from database
+    signal_data = await db.signals.find_one({"id": signal_id})
+    if not signal_data:
+        raise HTTPException(status_code=404, detail="Signal not found")
+    
+    signal = QuantumFlowSignal(**signal_data)
+    result = await portfolio_manager.follow_signal(signal, user_id)
+    return result
+
+@api_router.post("/portfolio/watch/{signal_id}")
+async def watch_signal(signal_id: str, user_id: str = "demo_user"):
+    """Watch a signal without creating a position"""
+    if not portfolio_manager:
+        raise HTTPException(status_code=500, detail="Portfolio manager not available")
+    
+    # Get the signal from database
+    signal_data = await db.signals.find_one({"id": signal_id})
+    if not signal_data:
+        raise HTTPException(status_code=404, detail="Signal not found")
+    
+    signal = QuantumFlowSignal(**signal_data)
+    result = await portfolio_manager.watch_signal(signal, user_id)
+    return result
+
+@api_router.post("/portfolio/update")
+async def update_portfolio_positions(user_id: str = "demo_user"):
+    """Update all portfolio positions with current prices"""
+    if not portfolio_manager:
+        raise HTTPException(status_code=500, detail="Portfolio manager not available")
+    
+    await portfolio_manager.update_positions(user_id)
+    portfolio = await portfolio_manager.get_or_create_portfolio(user_id)
+    return {"message": "Portfolio updated successfully", "portfolio": portfolio}
+
 @api_router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """WebSocket endpoint for real-time updates"""
