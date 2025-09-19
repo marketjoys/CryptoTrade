@@ -257,6 +257,4 @@ const Dashboard = ({ signals, activeSignals, performance, marketData, isConnecte
   );
 };
 
-
-
 export default Dashboard;
