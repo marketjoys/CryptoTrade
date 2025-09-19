@@ -289,7 +289,13 @@ class RealTimeDataCollector:
             }
         except Exception as e:
             logger.error(f"Error calculating price metrics: {e}")
-            return {}
+            return {
+                'volatility': 0,
+                'momentum': 0,
+                'price_acceleration': 0,
+                'returns_mean': 0,
+                'volume_trend': 1
+            }
 
 class QuantumFlowDetector:
     """Enhanced pattern detection engine"""
