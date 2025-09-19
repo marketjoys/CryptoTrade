@@ -112,9 +112,13 @@ class RealTimeDataCollector:
             }
             
             if coinbase_config['apiKey']:
-                # Use Coinbase Advanced (Pro) for sandbox support
-                exchange_class = ccxt.coinbasepro if coinbase_config.get('sandbox', True) else ccxt.coinbase
-                self.exchanges['coinbase'] = exchange_class(coinbase_config)
+                # Use standard coinbase exchange (supports both sandbox and live)
+                self.exchanges['coinbase'] = ccxt.coinbase({
+                    'apiKey': coinbase_config['apiKey'],
+                    'secret': coinbase_config['secret'],
+                    'sandbox': coinbase_config.get('sandbox', True),
+                    'enableRateLimit': True,
+                })
                 mode = "sandbox" if coinbase_config.get('sandbox', True) else "live"
                 logger.info(f"✅ Initialized Coinbase exchange ({mode} mode)")
             
