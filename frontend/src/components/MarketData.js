@@ -177,16 +177,24 @@ const MarketData = ({ marketData, fetchMarketData, config }) => {
               <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">📊 Order Book - Bids</h3>
                 <div className="space-y-2">
-                  {selectedData.orderbook.bids?.slice(0, 10).map((bid, index) => (
-                    <div key={index} className="flex justify-between items-center p-2 bg-green-900/20 rounded">
-                      <span className="text-green-400 font-mono text-sm">
-                        ${bid[0].toFixed(2)}
-                      </span>
-                      <span className="text-white font-mono text-sm">
-                        {bid[1].toFixed(4)}
-                      </span>
-                    </div>
-                  )) || <div className="text-gray-400 text-center py-4">No bid data available</div>}
+                  {selectedData.orderbook?.bids?.slice(0, 10).map((bid, index) => {
+                    // Safety checks for bid array
+                    if (!bid || !Array.isArray(bid) || bid.length < 2) return null;
+                    const price = Number(bid[0]);
+                    const amount = Number(bid[1]);
+                    if (isNaN(price) || isNaN(amount)) return null;
+                    
+                    return (
+                      <div key={index} className="flex justify-between items-center p-2 bg-green-900/20 rounded">
+                        <span className="text-green-400 font-mono text-sm">
+                          ${price.toFixed(2)}
+                        </span>
+                        <span className="text-white font-mono text-sm">
+                          {amount.toFixed(4)}
+                        </span>
+                      </div>
+                    );
+                  }).filter(Boolean) || [<div key="no-bids" className="text-gray-400 text-center py-4">No bid data available</div>]}
                 </div>
               </div>
 
