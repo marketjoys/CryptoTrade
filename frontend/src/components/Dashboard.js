@@ -128,7 +128,7 @@ const Dashboard = ({ signals, activeSignals, performance, marketData, isConnecte
           <GroqStats />
           
           {/* Market Overview */}
-          <MarketOverview marketData={marketData} />
+          <MarketOverview marketData={marketData} config={config} />
           
           {/* Active Signals Summary */}
           <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
