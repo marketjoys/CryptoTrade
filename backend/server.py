@@ -103,21 +103,29 @@ class RealTimeDataCollector:
     def init_exchanges(self):
         """Initialize exchange connections"""
         try:
-            # Initialize Coinbase exchange (no sandbox mode available)
+            # Initialize Coinbase exchange (try without credentials for public data first)
             coinbase_config = {
-                'apiKey': os.environ.get('COINBASE_API_KEY'),
-                'secret': os.environ.get('COINBASE_SECRET'),
                 'enableRateLimit': True,
             }
             
-            if coinbase_config['apiKey']:
-                self.exchanges['coinbase'] = ccxt.coinbase(coinbase_config)
-                trading_mode = os.environ.get('TRADING_MODE', 'sandbox')
-                logger.info(f"✅ Initialized Coinbase exchange (mode: {trading_mode})")
-                if trading_mode == 'sandbox':
-                    logger.info("📝 Note: Running in demo mode - signals are for analysis only")
+            # Add credentials if available
+            api_key = os.environ.get('COINBASE_API_KEY')
+            api_secret = os.environ.get('COINBASE_SECRET')
+            
+            if api_key and api_secret:
+                coinbase_config.update({
+                    'apiKey': api_key,
+                    'secret': api_secret,
+                })
+                logger.info(f"✅ Initialized Coinbase exchange with credentials")
             else:
-                logger.warning("⚠️ No Coinbase API credentials found - running in demo mode only")
+                logger.info(f"✅ Initialized Coinbase exchange in public mode (no credentials)")
+            
+            self.exchanges['coinbase'] = ccxt.coinbase(coinbase_config)
+            trading_mode = os.environ.get('TRADING_MODE', 'sandbox')
+            logger.info(f"📊 Trading mode: {trading_mode}")
+            if trading_mode == 'sandbox':
+                logger.info("📝 Note: Running in demo mode - signals are for analysis only")
             
         except Exception as e:
             logger.error(f"❌ Failed to initialize exchanges: {e}")
