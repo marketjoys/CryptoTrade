@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import SignalCard from './SignalCard';
 import PerformanceCard from './PerformanceCard';
 import MarketOverview from './MarketOverview';
+import GroqStats from './GroqStats';
 
 const Dashboard = ({ signals, activeSignals, performance, marketData, isConnected }) => {
   const [stats, setStats] = useState({
