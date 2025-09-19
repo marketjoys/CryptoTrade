@@ -105,6 +105,44 @@ class QuantumFlowAPITester:
     def test_market_data_endpoint(self):
         """Test the market data endpoint"""
         return self.run_test("Get Market Data BTC-USD", "GET", "market-data/BTC-USD", timeout=15)
+    
+    def test_market_data_invalid_symbol(self):
+        """Test market data endpoint with invalid symbol - should return structured error data"""
+        success, response = self.run_test("Get Market Data Invalid Symbol", "GET", "market-data/INVALID-SYMBOL", 200, timeout=15)
+        
+        # Additional validation for error handling improvements
+        if success and response:
+            print(f"   🔍 Validating error handling structure...")
+            
+            # Check if response contains structured default data instead of raw exceptions
+            required_fields = ['symbol', 'current_price', 'ticker', 'orderbook', 'trades', 'ohlcv', 'timestamp', 'exchange']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if missing_fields:
+                print(f"   ⚠️  Missing structured fields: {missing_fields}")
+                self.failed_tests.append({
+                    'name': 'Market Data Error Structure Validation',
+                    'error': f'Missing structured fields: {missing_fields}',
+                    'url': f"{self.api_url}/market-data/INVALID-SYMBOL"
+                })
+                return False, response
+            
+            # Check if error field is present (indicating graceful error handling)
+            if 'error' in response:
+                print(f"   ✅ Structured error handling confirmed: {response.get('error', 'N/A')}")
+            else:
+                print(f"   ⚠️  No error field found - may indicate successful API call or missing error info")
+            
+            # Validate default values are provided
+            if response.get('current_price') == 0:
+                print(f"   ✅ Default price value (0) provided for invalid symbol")
+            
+            if isinstance(response.get('orderbook'), dict) and 'bids' in response['orderbook'] and 'asks' in response['orderbook']:
+                print(f"   ✅ Structured orderbook with bids/asks provided")
+            
+            print(f"   ✅ Error handling improvements verified")
+        
+        return success, response
 
     def test_config_update(self):
         """Test updating configuration"""
