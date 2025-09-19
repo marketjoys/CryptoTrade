@@ -129,7 +129,7 @@ const MarketData = ({ marketData, fetchMarketData, config }) => {
               </button>
             </div>
 
-            {selectedData.current_price ? (
+            {selectedData.current_price !== undefined && selectedData.current_price !== null ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-white mb-1">
