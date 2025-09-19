@@ -153,6 +153,7 @@ function App() {
                   performance={performance}
                   marketData={marketData}
                   isConnected={isConnected}
+                  config={config}
                 />
               } 
             />
