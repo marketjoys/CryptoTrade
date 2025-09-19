@@ -608,7 +608,7 @@ class QuantumFlowDetector:
         return None
     
     async def _detect_volume_anomaly(self, data: Dict) -> Optional[QuantumFlowSignal]:
-        """Detect volume anomaly patterns"""
+        """Detect volume anomaly patterns with AI analysis"""
         try:
             volume_profile = data.get('volume_profile', {})
             price_metrics = data.get('price_metrics', {})
@@ -619,6 +619,9 @@ class QuantumFlowDetector:
             
             # Detect volume anomalies
             if buy_ratio > 0.75 and volume_trend > 2.0 and large_trades_ratio > 0.4:
+                # Get AI analysis for this signal
+                ai_analysis = await self._get_ai_analysis(data, "VOLUME_ANOMALY")
+                
                 return QuantumFlowSignal(
                     symbol=data.get('symbol', 'UNKNOWN'),
                     timestamp=datetime.utcnow(),
@@ -629,12 +632,16 @@ class QuantumFlowDetector:
                     risk_factor=0.08,
                     flow_strength=large_trades_ratio,
                     network_effect=0.5,
-                    ai_conviction="MODERATE",
+                    ai_conviction=ai_analysis.get('ai_conviction', 'MODERATE'),
                     exit_strategy={
                         'type': 'VOLUME_NORMALIZATION',
                         'stop_loss': 0.05,
                         'profit_target': 0.07,
-                        'time_limit': 1
+                        'time_limit': 1,
+                        'ai_reasoning': ai_analysis.get('technical_reasoning', 'Unusual volume spike detected'),
+                        'market_sentiment': ai_analysis.get('market_sentiment', 'NEUTRAL'),
+                        'risk_assessment': ai_analysis.get('risk_assessment', 'Volume anomaly risk'),
+                        'groq_analysis': ai_analysis
                     },
                     exchange=data.get('exchange', 'coinbase')
                 )
