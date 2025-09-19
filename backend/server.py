@@ -67,6 +67,35 @@ class QuantumFlowSignal(BaseModel):
     exit_reason: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+class MockPortfolioPosition(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    signal_id: str
+    symbol: str
+    flow_type: str
+    entry_price: float
+    quantity: float  # Mock quantity based on risk amount
+    entry_time: datetime
+    status: str = "ACTIVE"  # ACTIVE, CLOSED, WATCHING
+    exit_price: Optional[float] = None
+    exit_time: Optional[datetime] = None
+    pnl: Optional[float] = None
+    pnl_percentage: Optional[float] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class MockPortfolio(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str = "demo_user"  # For demo purposes
+    initial_balance: float = 10000.0  # Starting with $10k
+    current_balance: float = 10000.0
+    positions: List[MockPortfolioPosition] = []
+    total_pnl: float = 0.0
+    total_pnl_percentage: float = 0.0
+    active_positions: int = 0
+    closed_positions: int = 0
+    win_rate: float = 0.0
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
 class TradingConfig(BaseModel):
     symbols: List[str]
     max_positions: int = 5
