@@ -91,7 +91,7 @@ const MarketData = ({ marketData, fetchMarketData, config }) => {
                       <div>
                         <div className="font-medium">{displaySymbol}</div>
                         <div className="text-xs opacity-75">
-                          {data.current_price 
+                          {data.current_price !== undefined && data.current_price !== null
                             ? `$${data.current_price.toLocaleString()}`
                             : 'Loading...'
                           }
