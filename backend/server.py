@@ -112,8 +112,11 @@ class RealTimeDataCollector:
             }
             
             if coinbase_config['apiKey']:
-                self.exchanges['coinbase'] = ccxt.coinbase(coinbase_config)
-                logger.info("✅ Initialized Coinbase exchange (sandbox mode)")
+                # Use Coinbase Advanced (Pro) for sandbox support
+                exchange_class = ccxt.coinbasepro if coinbase_config.get('sandbox', True) else ccxt.coinbase
+                self.exchanges['coinbase'] = exchange_class(coinbase_config)
+                mode = "sandbox" if coinbase_config.get('sandbox', True) else "live"
+                logger.info(f"✅ Initialized Coinbase exchange ({mode} mode)")
             
         except Exception as e:
             logger.error(f"❌ Failed to initialize exchanges: {e}")
