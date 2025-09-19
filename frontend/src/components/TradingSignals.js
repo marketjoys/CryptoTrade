@@ -54,6 +54,52 @@ const TradingSignals = ({ signals, activeSignals }) => {
     };
   }, [signals]);
 
+  const handleFollowSignal = async (signal) => {
+    try {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+      const response = await fetch(`${backendUrl}/api/portfolio/follow/${signal.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`✅ ${result.message}\nPortfolio Balance: $${result.portfolio_balance?.toFixed(2) || 'N/A'}`);
+      } else {
+        alert(`❌ ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error following signal:', error);
+      alert('❌ Failed to follow signal. Please try again.');
+    }
+  };
+
+  const handleWatchSignal = async (signal) => {
+    try {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+      const response = await fetch(`${backendUrl}/api/portfolio/watch/${signal.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`✅ ${result.message}`);
+      } else {
+        alert(`❌ ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error watching signal:', error);
+      alert('❌ Failed to watch signal. Please try again.');
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
