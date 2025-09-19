@@ -1,7 +1,9 @@
 import { useState } from 'react';
 
-const SignalCard = ({ signal, showActions = false }) => {
+const SignalCard = ({ signal, showActions = false, onFollowSignal, onWatchSignal }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isWatching, setIsWatching] = useState(false);
 
   const getFlowTypeColor = (flowType) => {
     const colors = {
@@ -44,6 +46,36 @@ const SignalCard = ({ signal, showActions = false }) => {
 
   const calculatePotentialGain = () => {
     return ((signal.target_multiplier - 1) * 100).toFixed(1);
+  };
+
+  const handleFollowSignal = async () => {
+    if (isFollowing) return;
+    
+    setIsFollowing(true);
+    try {
+      if (onFollowSignal) {
+        await onFollowSignal(signal);
+      }
+    } catch (error) {
+      console.error('Error following signal:', error);
+    } finally {
+      setIsFollowing(false);
+    }
+  };
+
+  const handleWatchSignal = async () => {
+    if (isWatching) return;
+    
+    setIsWatching(true);
+    try {
+      if (onWatchSignal) {
+        await onWatchSignal(signal);
+      }
+    } catch (error) {
+      console.error('Error watching signal:', error);
+    } finally {
+      setIsWatching(false);
+    }
   };
 
   return (
