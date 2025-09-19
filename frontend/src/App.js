@@ -95,6 +95,13 @@ function App() {
       setActiveSignals(activeSignalsRes.data || []);
       setPerformance(performanceRes.data);
       setConfig(configRes.data);
+      
+      // Fetch market data for all configured symbols
+      if (configRes.data && configRes.data.symbols) {
+        configRes.data.symbols.forEach(symbol => {
+          fetchMarketData(symbol);
+        });
+      }
     } catch (error) {
       console.error('Error fetching initial data:', error);
     }
