@@ -427,6 +427,7 @@ class QuantumFlowDetector:
             
             MARKET DATA:
             - Current Price: ${current_price:,.2f}
+            - Signal Confidence: {confidence:.1%}
             - Buy/Sell Ratio: {volume_profile.get('buy_ratio', 0.5):.2%}
             - Volume Trend: {price_metrics.get('volume_trend', 1):.2f}x
             - Price Momentum: {price_metrics.get('momentum', 0):.2%}
@@ -489,8 +490,13 @@ class QuantumFlowDetector:
             # Add metadata
             ai_analysis['groq_api_called'] = True
             ai_analysis['groq_call_timestamp'] = datetime.utcnow().isoformat()
+            ai_analysis['cached'] = False
             
-            logger.info(f"🤖 Groq API call #{self.groq_call_count} for {symbol} {flow_type} - Sentiment: {ai_analysis.get('market_sentiment', 'N/A')}")
+            # Cache the result
+            cache_key = f"{symbol}_{flow_type}_{minute_key}"
+            self.groq_cache[cache_key] = (datetime.utcnow(), ai_analysis.copy())
+            
+            logger.info(f"🤖 Groq API call #{self.groq_call_count} for {symbol} {flow_type} (confidence: {confidence:.1%}) - Sentiment: {ai_analysis.get('market_sentiment', 'N/A')}")
             
             return ai_analysis
             
