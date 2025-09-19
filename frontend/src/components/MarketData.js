@@ -328,22 +328,34 @@ const MarketData = ({ marketData, fetchMarketData, config }) => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <MetricCard
                   title="Buy Ratio"
-                  value={`${(selectedData.volume_profile.buy_ratio * 100).toFixed(1)}%`}
+                  value={selectedData.volume_profile?.buy_ratio !== undefined && selectedData.volume_profile?.buy_ratio !== null
+                    ? `${(Number(selectedData.volume_profile.buy_ratio) * 100).toFixed(1)}%`
+                    : 'N/A'
+                  }
                   color="green"
                 />
                 <MetricCard
                   title="Large Trades"
-                  value={`$${(selectedData.volume_profile.large_trades_volume / 1000).toFixed(1)}K`}
+                  value={selectedData.volume_profile?.large_trades_volume !== undefined && selectedData.volume_profile?.large_trades_volume !== null
+                    ? `$${(Number(selectedData.volume_profile.large_trades_volume) / 1000).toFixed(1)}K`
+                    : 'N/A'
+                  }
                   color="purple"
                 />
                 <MetricCard
                   title="Avg Trade Size"
-                  value={`${selectedData.volume_profile.avg_trade_size.toFixed(2)}`}
+                  value={selectedData.volume_profile?.avg_trade_size !== undefined && selectedData.volume_profile?.avg_trade_size !== null
+                    ? `${Number(selectedData.volume_profile.avg_trade_size).toFixed(2)}`
+                    : 'N/A'
+                  }
                   color="blue"
                 />
                 <MetricCard
                   title="Total Volume"
-                  value={`${(selectedData.volume_profile.total_volume / 1000).toFixed(1)}K`}
+                  value={selectedData.volume_profile?.total_volume !== undefined && selectedData.volume_profile?.total_volume !== null
+                    ? `${(Number(selectedData.volume_profile.total_volume) / 1000).toFixed(1)}K`
+                    : 'N/A'
+                  }
                   color="yellow"
                 />
               </div>
