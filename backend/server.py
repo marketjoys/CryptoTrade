@@ -468,7 +468,7 @@ class QuantumFlowDetector:
         return signals
     
     async def _detect_whale_accumulation(self, data: Dict) -> Optional[QuantumFlowSignal]:
-        """Detect whale accumulation patterns"""
+        """Detect whale accumulation patterns with AI analysis"""
         try:
             volume_profile = data.get('volume_profile', {})
             liquidity_metrics = data.get('liquidity_metrics', {})
@@ -482,6 +482,9 @@ class QuantumFlowDetector:
                 large_trades_volume / total_volume > 0.3 and
                 liquidity_metrics.get('imbalance', 0) > 0.2):
                 
+                # Get AI analysis for this signal
+                ai_analysis = await self._get_ai_analysis(data, "WHALE_ACCUMULATION")
+                
                 confidence = min(0.95, 0.7 + buy_ratio * 0.3)
                 
                 return QuantumFlowSignal(
@@ -494,12 +497,16 @@ class QuantumFlowDetector:
                     risk_factor=0.04,
                     flow_strength=large_trades_volume / total_volume,
                     network_effect=0.7,
-                    ai_conviction="HIGH" if confidence > 0.85 else "MODERATE",
+                    ai_conviction=ai_analysis.get('ai_conviction', 'MODERATE'),
                     exit_strategy={
                         'type': 'WHALE_DISTRIBUTION',
                         'stop_loss': 0.03,
                         'profit_target': 0.12,
-                        'time_limit': 4
+                        'time_limit': 4,
+                        'ai_reasoning': ai_analysis.get('technical_reasoning', 'Whale accumulation pattern detected'),
+                        'market_sentiment': ai_analysis.get('market_sentiment', 'NEUTRAL'),
+                        'risk_assessment': ai_analysis.get('risk_assessment', 'Standard risk'),
+                        'groq_analysis': ai_analysis
                     },
                     exchange=data.get('exchange', 'coinbase')
                 )
