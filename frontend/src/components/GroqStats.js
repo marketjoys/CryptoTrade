@@ -15,8 +15,8 @@ const GroqStats = () => {
   useEffect(() => {
     fetchGroqStats();
     
-    // Update stats every 30 seconds
-    const interval = setInterval(fetchGroqStats, 30000);
+    // Update stats every 15 seconds instead of 30 for more responsive updates
+    const interval = setInterval(fetchGroqStats, 15000);
     return () => clearInterval(interval);
   }, []);
 
