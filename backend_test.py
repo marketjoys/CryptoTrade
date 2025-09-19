@@ -36,6 +36,10 @@ class QuantumFlowAPITester:
                 print(f"✅ PASSED - Status: {response.status_code}")
                 try:
                     response_data = response.json()
+                    
+                    # Validate response structure
+                    self.validate_response_structure(response_data, name)
+                    
                     if isinstance(response_data, dict) and len(response_data) <= 3:
                         print(f"   Response: {response_data}")
                     elif isinstance(response_data, list):
