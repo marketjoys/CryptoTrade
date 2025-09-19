@@ -116,6 +116,50 @@ const SignalCard = ({ signal, showActions = false }) => {
       {/* Expanded Details */}
       {isExpanded && (
         <div className="border-t border-gray-600 pt-3 mt-3">
+          {/* AI Analysis Section */}
+          {signal.exit_strategy?.groq_analysis && (
+            <div className="mb-4 p-3 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg border border-purple-600/30">
+              <div className="flex items-center mb-2">
+                <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-xs text-white mr-2">
+                  🤖
+                </div>
+                <span className="font-medium text-white">AI Analysis</span>
+                {signal.exit_strategy.groq_analysis.groq_api_called && (
+                  <span className="ml-2 px-2 py-0.5 bg-green-600 text-green-100 text-xs rounded">
+                    Groq API
+                  </span>
+                )}
+              </div>
+              
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">Market Sentiment:</span>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                    signal.exit_strategy.market_sentiment === 'BULLISH' ? 'bg-green-600 text-green-100' :
+                    signal.exit_strategy.market_sentiment === 'BEARISH' ? 'bg-red-600 text-red-100' :
+                    'bg-gray-600 text-gray-100'
+                  }`}>
+                    {signal.exit_strategy.market_sentiment || 'NEUTRAL'}
+                  </span>
+                </div>
+                
+                <div>
+                  <span className="text-gray-400">Technical Reasoning:</span>
+                  <div className="text-white mt-1 p-2 bg-gray-800 rounded text-xs">
+                    {signal.exit_strategy.ai_reasoning || 'Mathematical analysis based detection'}
+                  </div>
+                </div>
+                
+                <div>
+                  <span className="text-gray-400">Risk Assessment:</span>
+                  <div className="text-white mt-1 p-2 bg-gray-800 rounded text-xs">
+                    {signal.exit_strategy.risk_assessment || 'Standard risk parameters applied'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="grid grid-cols-2 gap-4 text-xs">
             <div>
               <span className="text-gray-400">Flow Strength:</span>
