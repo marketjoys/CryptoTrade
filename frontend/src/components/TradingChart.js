@@ -157,7 +157,12 @@ const TradingChart = ({ symbol, signals = [], onSymbolChange }) => {
   };
 
   const addSignalMarkers = (signalsToAdd) => {
-    if (!candleSeries.current) return;
+    if (!candleSeries.current) {
+      console.log('❌ CandleSeries not available for markers');
+      return;
+    }
+
+    console.log(`🎯 Adding markers for ${signalsToAdd.length} signals`);
 
     const markers = signalsToAdd
       .filter(signal => signal.symbol === currentSymbol)
@@ -185,7 +190,13 @@ const TradingChart = ({ symbol, signals = [], onSymbolChange }) => {
         };
       });
 
-    candleSeries.current.setMarkers(markers);
+    try {
+      console.log(`🔧 Setting ${markers.length} markers on candlestick series`);
+      candleSeries.current.setMarkers(markers);
+      console.log('✅ Markers set successfully');
+    } catch (error) {
+      console.error('❌ Error setting markers:', error);
+    }
   };
 
   const handleSymbolChange = (newSymbol) => {
