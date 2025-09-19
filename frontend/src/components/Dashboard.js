@@ -14,7 +14,7 @@ const Dashboard = ({ signals, activeSignals, performance, marketData, isConnecte
     todaySignals: 0,
     winRate: 0
   });
-  const [currentView, setCurrentView] = useState('overview'); // overview, charts, portfolio
+  const [currentView, setCurrentView] = useState('overview'); // overview, charts, portfolio, autotrader
   const [selectedSymbol, setSelectedSymbol] = useState('BTC-USD');
 
   useEffect(() => {
