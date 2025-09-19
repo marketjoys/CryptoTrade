@@ -201,16 +201,24 @@ const MarketData = ({ marketData, fetchMarketData, config }) => {
               <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">📊 Order Book - Asks</h3>
                 <div className="space-y-2">
-                  {selectedData.orderbook.asks?.slice(0, 10).map((ask, index) => (
-                    <div key={index} className="flex justify-between items-center p-2 bg-red-900/20 rounded">
-                      <span className="text-red-400 font-mono text-sm">
-                        ${ask[0].toFixed(2)}
-                      </span>
-                      <span className="text-white font-mono text-sm">
-                        {ask[1].toFixed(4)}
-                      </span>
-                    </div>
-                  )) || <div className="text-gray-400 text-center py-4">No ask data available</div>}
+                  {selectedData.orderbook?.asks?.slice(0, 10).map((ask, index) => {
+                    // Safety checks for ask array
+                    if (!ask || !Array.isArray(ask) || ask.length < 2) return null;
+                    const price = Number(ask[0]);
+                    const amount = Number(ask[1]);
+                    if (isNaN(price) || isNaN(amount)) return null;
+                    
+                    return (
+                      <div key={index} className="flex justify-between items-center p-2 bg-red-900/20 rounded">
+                        <span className="text-red-400 font-mono text-sm">
+                          ${price.toFixed(2)}
+                        </span>
+                        <span className="text-white font-mono text-sm">
+                          {amount.toFixed(4)}
+                        </span>
+                      </div>
+                    );
+                  }).filter(Boolean) || [<div key="no-asks" className="text-gray-400 text-center py-4">No ask data available</div>]}
                 </div>
               </div>
             </div>
