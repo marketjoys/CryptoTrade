@@ -122,6 +122,160 @@ class MarketData(BaseModel):
     market_cap: Optional[float] = None
     timestamp: datetime
 
+class MockPortfolioManager:
+    """Manages mock trading portfolio for signal simulation"""
+    
+    def __init__(self):
+        self.risk_per_trade = 0.02  # 2% risk per trade
+        self.max_position_size = 0.1  # Max 10% of portfolio per position
+    
+    async def get_or_create_portfolio(self, user_id: str = "demo_user") -> MockPortfolio:
+        """Get existing portfolio or create new one"""
+        try:
+            portfolio_data = await db.mock_portfolios.find_one({"user_id": user_id})
+            if portfolio_data:
+                return MockPortfolio(**portfolio_data)
+            else:
+                # Create new portfolio
+                new_portfolio = MockPortfolio(user_id=user_id)
+                await db.mock_portfolios.insert_one(new_portfolio.dict())
+                return new_portfolio
+        except Exception as e:
+            logger.error(f"Error getting/creating portfolio: {e}")
+            return MockPortfolio(user_id=user_id)
+    
+    async def follow_signal(self, signal: QuantumFlowSignal, user_id: str = "demo_user") -> Dict:
+        """Follow a signal by creating a mock position"""
+        try:
+            portfolio = await self.get_or_create_portfolio(user_id)
+            
+            # Calculate position size based on risk management
+            risk_amount = portfolio.current_balance * self.risk_per_trade
+            max_position_amount = portfolio.current_balance * self.max_position_size
+            
+            # Use the smaller of risk-based or max position size
+            position_amount = min(risk_amount / signal.risk_factor, max_position_amount)
+            quantity = position_amount / signal.entry_price
+            
+            # Create new position
+            position = MockPortfolioPosition(
+                signal_id=signal.id,
+                symbol=signal.symbol,
+                flow_type=signal.flow_type,
+                entry_price=signal.entry_price,
+                quantity=quantity,
+                entry_time=datetime.utcnow(),
+                status="ACTIVE"
+            )
+            
+            # Update portfolio
+            portfolio.positions.append(position)
+            portfolio.active_positions += 1
+            portfolio.current_balance -= position_amount  # Reserve the amount
+            portfolio.updated_at = datetime.utcnow()
+            
+            # Save to database
+            await db.mock_portfolios.update_one(
+                {"user_id": user_id},
+                {"$set": portfolio.dict()},
+                upsert=True
+            )
+            
+            logger.info(f"📈 Following signal: {signal.symbol} {signal.flow_type} - Amount: ${position_amount:.2f}")
+            
+            return {
+                "success": True,
+                "message": f"Now following {signal.symbol} {signal.flow_type} signal",
+                "position": position.dict(),
+                "portfolio_balance": portfolio.current_balance
+            }
+            
+        except Exception as e:
+            logger.error(f"Error following signal: {e}")
+            return {
+                "success": False,
+                "message": f"Failed to follow signal: {str(e)}"
+            }
+    
+    async def watch_signal(self, signal: QuantumFlowSignal, user_id: str = "demo_user") -> Dict:
+        """Add signal to watchlist without position"""
+        try:
+            portfolio = await self.get_or_create_portfolio(user_id)
+            
+            # Create watch position (no money involved)
+            position = MockPortfolioPosition(
+                signal_id=signal.id,
+                symbol=signal.symbol,
+                flow_type=signal.flow_type,
+                entry_price=signal.entry_price,
+                quantity=0,  # No actual position
+                entry_time=datetime.utcnow(),
+                status="WATCHING"
+            )
+            
+            portfolio.positions.append(position)
+            portfolio.updated_at = datetime.utcnow()
+            
+            # Save to database
+            await db.mock_portfolios.update_one(
+                {"user_id": user_id},
+                {"$set": portfolio.dict()},
+                upsert=True
+            )
+            
+            logger.info(f"👁️ Watching signal: {signal.symbol} {signal.flow_type}")
+            
+            return {
+                "success": True,
+                "message": f"Now watching {signal.symbol} {signal.flow_type} signal",
+                "position": position.dict()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error watching signal: {e}")
+            return {
+                "success": False,
+                "message": f"Failed to watch signal: {str(e)}"
+            }
+    
+    async def update_positions(self, user_id: str = "demo_user"):
+        """Update all active positions with current prices"""
+        try:
+            portfolio = await self.get_or_create_portfolio(user_id)
+            updated = False
+            
+            for position in portfolio.positions:
+                if position.status == "ACTIVE" and position.quantity > 0:
+                    # Get current price for the symbol
+                    if quantum_engine:
+                        current_data = await quantum_engine.data_collector.get_market_data(position.symbol)
+                        current_price = current_data.get('current_price', position.entry_price)
+                        
+                        # Calculate P&L
+                        pnl = (current_price - position.entry_price) * position.quantity
+                        pnl_percentage = ((current_price - position.entry_price) / position.entry_price) * 100
+                        
+                        # Update position (without modifying the original)
+                        position.pnl = pnl
+                        position.pnl_percentage = pnl_percentage
+                        updated = True
+            
+            if updated:
+                # Recalculate portfolio totals
+                portfolio.total_pnl = sum(p.pnl or 0 for p in portfolio.positions if p.status == "ACTIVE")
+                portfolio.total_pnl_percentage = (portfolio.total_pnl / portfolio.initial_balance) * 100
+                portfolio.updated_at = datetime.utcnow()
+                
+                # Save to database
+                await db.mock_portfolios.update_one(
+                    {"user_id": user_id},
+                    {"$set": portfolio.dict()},
+                    upsert=True
+                )
+            
+        except Exception as e:
+            logger.error(f"Error updating positions: {e}")
+
 class RealTimeDataCollector:
     """Enhanced data collector for crypto markets"""
     
