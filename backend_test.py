@@ -5,7 +5,7 @@ from datetime import datetime
 import time
 
 class QuantumFlowAPITester:
-    def __init__(self, base_url="https://crypto-app-prep.preview.emergentagent.com"):
+    def __init__(self, base_url="https://dashboard-market-fix.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
