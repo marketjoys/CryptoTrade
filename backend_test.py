@@ -144,7 +144,28 @@ class QuantumFlowAPITester:
         
         return success, response
 
-    def test_config_update(self):
+    def validate_response_structure(self, response, endpoint_name):
+        """Validate that responses contain well-formed data structures"""
+        if not response:
+            return True  # Empty response is acceptable for some endpoints
+        
+        print(f"   🔍 Validating response structure for {endpoint_name}...")
+        
+        # Check for proper JSON structure
+        if not isinstance(response, (dict, list)):
+            print(f"   ⚠️  Response is not proper JSON structure")
+            return False
+        
+        # For dict responses, check for common error patterns
+        if isinstance(response, dict):
+            # Check if it's a raw exception or error object
+            error_indicators = ['traceback', 'exception', 'error_type']
+            if any(indicator in str(response).lower() for indicator in error_indicators):
+                print(f"   ⚠️  Response contains raw exception data")
+                return False
+        
+        print(f"   ✅ Response structure is well-formed")
+        return True
         """Test updating configuration"""
         config_data = {
             "symbols": ["BTC-USD", "ETH-USD"],
