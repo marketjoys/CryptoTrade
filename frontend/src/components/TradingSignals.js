@@ -171,7 +171,13 @@ const TradingSignals = ({ signals, activeSignals }) => {
       <div className="space-y-6">
         {filteredAndSortedSignals.length > 0 ? (
           filteredAndSortedSignals.map((signal) => (
-            <SignalCard key={signal.id} signal={signal} showActions={true} />
+            <SignalCard 
+              key={signal.id} 
+              signal={signal} 
+              showActions={true} 
+              onFollowSignal={handleFollowSignal}
+              onWatchSignal={handleWatchSignal}
+            />
           ))
         ) : (
           <div className="bg-gray-800 rounded-lg border border-gray-700 p-12 text-center">
