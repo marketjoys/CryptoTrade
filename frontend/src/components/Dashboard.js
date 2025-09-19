@@ -264,6 +264,10 @@ const Dashboard = ({ signals, activeSignals, performance, marketData, isConnecte
       {currentView === 'portfolio' && (
         <PortfolioDashboard />
       )}
+
+      {currentView === 'autotrader' && (
+        <AutoTraderDashboard />
+      )}
     </div>
   );
 };
