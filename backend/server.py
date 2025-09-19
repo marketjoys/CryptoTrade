@@ -103,24 +103,21 @@ class RealTimeDataCollector:
     def init_exchanges(self):
         """Initialize exchange connections"""
         try:
-            # Initialize Coinbase Pro (Sandbox mode)
+            # Initialize Coinbase exchange (no sandbox mode available)
             coinbase_config = {
                 'apiKey': os.environ.get('COINBASE_API_KEY'),
                 'secret': os.environ.get('COINBASE_SECRET'),
-                'sandbox': os.environ.get('TRADING_MODE', 'sandbox') == 'sandbox',
                 'enableRateLimit': True,
             }
             
             if coinbase_config['apiKey']:
-                # Use standard coinbase exchange (supports both sandbox and live)
-                self.exchanges['coinbase'] = ccxt.coinbase({
-                    'apiKey': coinbase_config['apiKey'],
-                    'secret': coinbase_config['secret'],
-                    'sandbox': coinbase_config.get('sandbox', True),
-                    'enableRateLimit': True,
-                })
-                mode = "sandbox" if coinbase_config.get('sandbox', True) else "live"
-                logger.info(f"✅ Initialized Coinbase exchange ({mode} mode)")
+                self.exchanges['coinbase'] = ccxt.coinbase(coinbase_config)
+                trading_mode = os.environ.get('TRADING_MODE', 'sandbox')
+                logger.info(f"✅ Initialized Coinbase exchange (mode: {trading_mode})")
+                if trading_mode == 'sandbox':
+                    logger.info("📝 Note: Running in demo mode - signals are for analysis only")
+            else:
+                logger.warning("⚠️ No Coinbase API credentials found - running in demo mode only")
             
         except Exception as e:
             logger.error(f"❌ Failed to initialize exchanges: {e}")
