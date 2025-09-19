@@ -110,10 +110,18 @@ const TradingChart = ({ symbol, signals = [], onSymbolChange }) => {
 
   const loadChartData = async (symbolToLoad) => {
     setIsLoading(true);
+    console.log(`📊 Loading chart data for ${symbolToLoad}...`);
+    
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
       const response = await fetch(`${backendUrl}/api/market-data/${symbolToLoad}`);
       const data = await response.json();
+      
+      console.log(`📈 Received data for ${symbolToLoad}:`, {
+        hasOhlcv: !!data.ohlcv,
+        ohlcvLength: data.ohlcv?.length || 0,
+        currentPrice: data.current_price
+      });
       
       if (data && data.error) {
         console.error('Market data error:', data.error);
@@ -138,16 +146,36 @@ const TradingChart = ({ symbol, signals = [], onSymbolChange }) => {
           color: item[4] >= item[1] ? '#10b98150' : '#ef444450', // Green for up, red for down
         }));
 
+        console.log(`🔧 Chart series status:`, {
+          candleSeriesExists: !!candleSeries.current,
+          volumeSeriesExists: !!volumeSeries.current,
+          candleDataPoints: candleData.length,
+          volumeDataPoints: volumeData.length,
+          firstCandlePoint: candleData[0],
+          lastCandlePoint: candleData[candleData.length - 1]
+        });
+
         // Update chart series
         if (candleSeries.current && volumeSeries.current) {
-          candleSeries.current.setData(candleData);
-          volumeSeries.current.setData(volumeData);
-          
-          // Fit content
-          chart.current.timeScale().fitContent();
+          try {
+            candleSeries.current.setData(candleData);
+            volumeSeries.current.setData(volumeData);
+            
+            console.log(`✅ Successfully set data on chart series`);
+            
+            // Fit content
+            chart.current.timeScale().fitContent();
+            console.log(`✅ Chart content fitted`);
+          } catch (error) {
+            console.error('❌ Error setting chart data:', error);
+          }
+        } else {
+          console.error('❌ Chart series not available for data setting');
         }
 
         setChartData(data);
+      } else {
+        console.warn(`⚠️ No OHLCV data available for ${symbolToLoad}`);
       }
     } catch (error) {
       console.error('Error loading chart data:', error);
