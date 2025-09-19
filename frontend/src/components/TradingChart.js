@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, ColorType } from 'lightweight-charts';
+import { createChart, ColorType, CandlestickSeries, HistogramSeries } from 'lightweight-charts';
 
 const TradingChart = ({ symbol, signals = [], onSymbolChange }) => {
   const chartContainerRef = useRef();
