@@ -1188,6 +1188,182 @@ class QuantumFlowEngine:
         self.running = False
         logger.info("🛑 Quantum Flow analysis stopped")
 
+class AutoTrader:
+    """Automated trading agent for high-confidence signals"""
+    
+    def __init__(self, portfolio_manager, config: AutoTraderConfig = None):
+        self.portfolio_manager = portfolio_manager
+        self.config = config or AutoTraderConfig()
+        self.last_trade_time = {}  # Track cooldowns per symbol
+        self.active_auto_positions = {}  # Track auto-positions
+        self.total_auto_risk = 0.0
+        
+        logger.info(f"🤖 AutoTrader initialized - Enabled: {self.config.enabled}")
+        
+    async def evaluate_signal(self, signal: QuantumFlowSignal) -> Dict:
+        """Evaluate if signal meets auto-trading criteria"""
+        
+        if not self.config.enabled:
+            return {"auto_trade": False, "reason": "AutoTrader disabled"}
+            
+        # Check confidence threshold
+        if signal.confidence < self.config.min_confidence:
+            return {
+                "auto_trade": False, 
+                "reason": f"Confidence {signal.confidence:.1%} < {self.config.min_confidence:.1%}"
+            }
+        
+        # Check profit potential
+        profit_potential = signal.target_multiplier
+        if profit_potential < self.config.profit_target_multiplier:
+            return {
+                "auto_trade": False,
+                "reason": f"Profit potential {profit_potential:.2f} < {self.config.profit_target_multiplier:.2f}"
+            }
+        
+        # Check cooldown
+        symbol = signal.symbol
+        if symbol in self.last_trade_time:
+            time_since_last = (datetime.utcnow() - self.last_trade_time[symbol]).total_seconds() / 60
+            if time_since_last < self.config.cooldown_minutes:
+                return {
+                    "auto_trade": False,
+                    "reason": f"Cooldown: {time_since_last:.1f}min < {self.config.cooldown_minutes}min"
+                }
+        
+        # Check position limits
+        if len(self.active_auto_positions) >= self.config.max_positions:
+            return {
+                "auto_trade": False,
+                "reason": f"Max positions reached: {len(self.active_auto_positions)}/{self.config.max_positions}"
+            }
+        
+        # Check portfolio risk
+        if self.total_auto_risk >= self.config.max_portfolio_risk:
+            return {
+                "auto_trade": False,
+                "reason": f"Max portfolio risk reached: {self.total_auto_risk:.1%}/{self.config.max_portfolio_risk:.1%}"
+            }
+        
+        # Check AI conviction if available
+        if hasattr(signal, 'exit_strategy') and signal.exit_strategy.get('groq_analysis'):
+            ai_analysis = signal.exit_strategy['groq_analysis']
+            ai_conviction = ai_analysis.get('ai_conviction', 'MODERATE')
+            if ai_conviction not in ['HIGH', 'VERY_HIGH']:
+                return {
+                    "auto_trade": False,
+                    "reason": f"AI conviction {ai_conviction} not high enough"
+                }
+        
+        return {
+            "auto_trade": True,
+            "reason": f"✅ Meets all criteria - Confidence: {signal.confidence:.1%}, Profit: {profit_potential:.2f}x"
+        }
+    
+    async def execute_auto_trade(self, signal: QuantumFlowSignal, user_id: str = "auto_trader") -> Dict:
+        """Execute automatic trade for qualified signal"""
+        
+        try:
+            # Create auto-trading position with reduced risk
+            original_risk = self.portfolio_manager.risk_per_trade
+            self.portfolio_manager.risk_per_trade = self.config.risk_per_trade
+            
+            # Execute the trade
+            result = await self.portfolio_manager.follow_signal(signal, user_id)
+            
+            # Restore original risk
+            self.portfolio_manager.risk_per_trade = original_risk
+            
+            if result.get("success"):
+                # Track the auto-position
+                position_id = result["position"]["id"]
+                self.active_auto_positions[position_id] = {
+                    "signal_id": signal.id,
+                    "symbol": signal.symbol,
+                    "entry_time": datetime.utcnow(),
+                    "entry_price": signal.entry_price,
+                    "target_price": signal.entry_price * signal.target_multiplier,
+                    "stop_loss": signal.entry_price * self.config.stop_loss_multiplier,
+                    "risk_amount": result["position"]["quantity"] * signal.entry_price * signal.risk_factor
+                }
+                
+                # Update tracking
+                self.last_trade_time[signal.symbol] = datetime.utcnow()
+                self.total_auto_risk += self.active_auto_positions[position_id]["risk_amount"]
+                
+                logger.info(f"🤖 AUTO-TRADE EXECUTED: {signal.symbol} {signal.flow_type} - "
+                          f"Confidence: {signal.confidence:.1%}, Target: {signal.target_multiplier:.2f}x")
+                
+                return {
+                    "success": True,
+                    "message": f"🤖 Auto-traded {signal.symbol} {signal.flow_type}",
+                    "position_id": position_id,
+                    "auto_trade": True
+                }
+            else:
+                return result
+                
+        except Exception as e:
+            logger.error(f"Auto-trade execution error: {e}")
+            return {
+                "success": False,
+                "message": f"Auto-trade failed: {str(e)}",
+                "auto_trade": False
+            }
+    
+    async def monitor_positions(self):
+        """Monitor auto-positions for exit conditions"""
+        
+        if not self.active_auto_positions:
+            return
+            
+        try:
+            for position_id, position_info in list(self.active_auto_positions.items()):
+                # Here you would check current price vs target/stop-loss
+                # For now, we'll implement basic time-based exit logic
+                
+                time_held = (datetime.utcnow() - position_info["entry_time"]).total_seconds() / 3600  # hours
+                
+                # Auto-exit after 24 hours (can be made configurable)
+                if time_held > 24:
+                    await self._exit_auto_position(position_id, "Time-based exit")
+                    
+        except Exception as e:
+            logger.error(f"Error monitoring auto-positions: {e}")
+    
+    async def _exit_auto_position(self, position_id: str, reason: str):
+        """Exit an auto-position"""
+        
+        if position_id in self.active_auto_positions:
+            position_info = self.active_auto_positions[position_id]
+            
+            # Reduce total risk
+            self.total_auto_risk -= position_info["risk_amount"]
+            
+            # Remove from tracking
+            del self.active_auto_positions[position_id]
+            
+            logger.info(f"🤖 AUTO-EXIT: Position {position_id} - {reason}")
+    
+    def get_status(self) -> Dict:
+        """Get current AutoTrader status"""
+        
+        return {
+            "enabled": self.config.enabled,
+            "config": self.config.dict(),
+            "active_positions": len(self.active_auto_positions),
+            "total_risk": self.total_auto_risk,
+            "positions": list(self.active_auto_positions.values()),
+            "last_trades": {symbol: time.isoformat() for symbol, time in self.last_trade_time.items()}
+        }
+    
+    def update_config(self, new_config: AutoTraderConfig):
+        """Update AutoTrader configuration"""
+        
+        self.config = new_config
+        logger.info(f"🤖 AutoTrader config updated - Enabled: {self.config.enabled}")
+        return {"success": True, "message": "AutoTrader configuration updated"}
+
 # Startup and shutdown events
 @asynccontextmanager
 async def lifespan(app: FastAPI):
