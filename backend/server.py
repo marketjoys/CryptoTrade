@@ -320,11 +320,19 @@ class QuantumFlowDetector:
         self.groq_call_count = 0
         self.last_groq_call_time = datetime.utcnow()
         
+        # Groq API optimization - caching and rate limiting
+        self.groq_cache = {}  # Cache recent analyses
+        self.groq_rate_limit = {}  # Track calls per symbol-pattern
+        self.min_confidence_for_groq = float(os.environ.get('MIN_CONFIDENCE_FOR_GROQ', 0.8))
+        self.groq_cache_ttl = 300  # 5 minutes cache TTL
+        self.max_groq_calls_per_minute = 10  # Rate limit
+        
         # Initialize AI client
         groq_key = os.environ.get('GROQ_API_KEY')
         if groq_key:
             self.groq_client = Groq(api_key=groq_key)
-            logger.info("✅ Initialized Groq AI client for signal analysis")
+            logger.info("✅ Initialized Groq AI client with optimization (min confidence: {:.1%}, cache: {}s)".format(
+                self.min_confidence_for_groq, self.groq_cache_ttl))
     
     async def _get_ai_analysis(self, signal_data: Dict, flow_type: str) -> Dict:
         """Get comprehensive AI analysis from Groq for signal reasoning"""
