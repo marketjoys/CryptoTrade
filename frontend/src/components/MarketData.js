@@ -97,11 +97,11 @@ const MarketData = ({ marketData, fetchMarketData, config }) => {
                           }
                         </div>
                       </div>
-                      {data.ticker?.percentage && (
+                      {data.ticker?.percentage !== undefined && data.ticker?.percentage !== null && (
                         <div className={`text-xs font-medium ${
                           data.ticker.percentage >= 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
-                          {data.ticker.percentage >= 0 ? '+' : ''}{data.ticker.percentage.toFixed(2)}%
+                          {data.ticker.percentage >= 0 ? '+' : ''}{Number(data.ticker.percentage).toFixed(2)}%
                         </div>
                       )}
                     </div>
