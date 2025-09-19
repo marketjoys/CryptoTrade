@@ -46,8 +46,9 @@ const TradingChart = ({ symbol, signals = [], onSymbolChange }) => {
       },
     });
 
-    // Add candlestick series
-    candleSeries.current = chart.current.addCandlestickSeries({
+    // Add candlestick series using v5 API
+    candleSeries.current = chart.current.addSeries({
+      type: 'Candlestick',
       upColor: '#10b981',
       downColor: '#ef4444',
       borderVisible: false,
@@ -55,8 +56,9 @@ const TradingChart = ({ symbol, signals = [], onSymbolChange }) => {
       wickDownColor: '#ef4444',
     });
 
-    // Add volume series
-    volumeSeries.current = chart.current.addHistogramSeries({
+    // Add volume series using v5 API
+    volumeSeries.current = chart.current.addSeries({
+      type: 'Histogram',
       color: '#6b7280',
       priceFormat: {
         type: 'volume',
