@@ -73,6 +73,9 @@ const MarketData = ({ marketData, fetchMarketData, config }) => {
                 const data = marketData[symbol] || {};
                 const displaySymbol = symbol.replace('-USD', '');
                 const isActive = symbol === selectedSymbol;
+                const price = data.current_price || 0;
+                const ticker = data.ticker || {};
+                const percentage = ticker.percentage || 0;
 
                 return (
                   <button
