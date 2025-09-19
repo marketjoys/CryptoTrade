@@ -3,6 +3,8 @@ import SignalCard from './SignalCard';
 import PerformanceCard from './PerformanceCard';
 import MarketOverview from './MarketOverview';
 import GroqStats from './GroqStats';
+import TradingChart from './TradingChart';
+import PortfolioDashboard from './PortfolioDashboard';
 
 const Dashboard = ({ signals, activeSignals, performance, marketData, isConnected, config }) => {
   const [stats, setStats] = useState({
@@ -11,6 +13,8 @@ const Dashboard = ({ signals, activeSignals, performance, marketData, isConnecte
     todaySignals: 0,
     winRate: 0
   });
+  const [currentView, setCurrentView] = useState('overview'); // overview, charts, portfolio
+  const [selectedSymbol, setSelectedSymbol] = useState('BTC-USD');
 
   useEffect(() => {
     calculateStats();
@@ -28,6 +32,52 @@ const Dashboard = ({ signals, activeSignals, performance, marketData, isConnecte
       todaySignals,
       winRate: performance ? performance.win_rate : 0
     });
+  };
+
+  const handleFollowSignal = async (signal) => {
+    try {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+      const response = await fetch(`${backendUrl}/api/portfolio/follow/${signal.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`✅ ${result.message}\nPortfolio Balance: $${result.portfolio_balance?.toFixed(2) || 'N/A'}`);
+      } else {
+        alert(`❌ ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error following signal:', error);
+      alert('❌ Failed to follow signal. Please try again.');
+    }
+  };
+
+  const handleWatchSignal = async (signal) => {
+    try {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+      const response = await fetch(`${backendUrl}/api/portfolio/watch/${signal.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`✅ ${result.message}`);
+      } else {
+        alert(`❌ ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error watching signal:', error);
+      alert('❌ Failed to watch signal. Please try again.');
+    }
   };
 
   const recentSignals = signals.slice(0, 5);
