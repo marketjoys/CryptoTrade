@@ -231,23 +231,35 @@ const MarketData = ({ marketData, fetchMarketData, config }) => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <MetricCard
                   title="Spread"
-                  value={`${(selectedData.liquidity_metrics.spread * 100).toFixed(3)}%`}
+                  value={selectedData.liquidity_metrics?.spread !== undefined && selectedData.liquidity_metrics?.spread !== null
+                    ? `${(Number(selectedData.liquidity_metrics.spread) * 100).toFixed(3)}%`
+                    : 'N/A'
+                  }
                   color="blue"
                 />
                 <MetricCard
                   title="Bid Depth"
-                  value={`$${(selectedData.liquidity_metrics.bid_depth / 1000).toFixed(1)}K`}
+                  value={selectedData.liquidity_metrics?.bid_depth !== undefined && selectedData.liquidity_metrics?.bid_depth !== null
+                    ? `$${(Number(selectedData.liquidity_metrics.bid_depth) / 1000).toFixed(1)}K`
+                    : 'N/A'
+                  }
                   color="green"
                 />
                 <MetricCard
                   title="Ask Depth"
-                  value={`$${(selectedData.liquidity_metrics.ask_depth / 1000).toFixed(1)}K`}
+                  value={selectedData.liquidity_metrics?.ask_depth !== undefined && selectedData.liquidity_metrics?.ask_depth !== null
+                    ? `$${(Number(selectedData.liquidity_metrics.ask_depth) / 1000).toFixed(1)}K`
+                    : 'N/A'
+                  }
                   color="red"
                 />
                 <MetricCard
                   title="Imbalance"
-                  value={`${(selectedData.liquidity_metrics.imbalance * 100).toFixed(1)}%`}
-                  color={selectedData.liquidity_metrics.imbalance > 0 ? 'green' : 'red'}
+                  value={selectedData.liquidity_metrics?.imbalance !== undefined && selectedData.liquidity_metrics?.imbalance !== null
+                    ? `${(Number(selectedData.liquidity_metrics.imbalance) * 100).toFixed(1)}%`
+                    : 'N/A'
+                  }
+                  color={selectedData.liquidity_metrics?.imbalance && Number(selectedData.liquidity_metrics.imbalance) > 0 ? 'green' : 'red'}
                 />
               </div>
             </div>
