@@ -120,9 +120,12 @@ const Dashboard = ({ signals, activeSignals, performance, marketData, isConnecte
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Performance Card */}
           <PerformanceCard performance={performance} />
+          
+          {/* Groq AI Stats */}
+          <GroqStats />
           
           {/* Market Overview */}
           <MarketOverview marketData={marketData} />
