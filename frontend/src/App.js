@@ -170,11 +170,13 @@ function App() {
             <Route 
               path="/market" 
               element={
-                <MarketData 
-                  marketData={marketData}
-                  fetchMarketData={fetchMarketData}
-                  config={config}
-                />
+                <ErrorBoundary>
+                  <MarketData 
+                    marketData={marketData}
+                    fetchMarketData={fetchMarketData}
+                    config={config}
+                  />
+                </ErrorBoundary>
               } 
             />
             <Route 
