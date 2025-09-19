@@ -244,11 +244,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Integrate Groq API for signal analysis"
-    - "Add XRP to tracking system"
-    - "Enhanced MarketOverview with loading states"
-    - "Add GroqStats component for AI tracking"
-    - "Enhanced SignalCard with AI analysis display"
+    - "Mock Portfolio API Implementation"
+    - "Portfolio Risk Management System"
+    - "Real-time Market Data Integration"
+    - "Groq API Optimization Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
