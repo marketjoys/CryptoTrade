@@ -5,6 +5,7 @@ import MarketOverview from './MarketOverview';
 import GroqStats from './GroqStats';
 import TradingChart from './TradingChart';
 import PortfolioDashboard from './PortfolioDashboard';
+import AutoTraderDashboard from './AutoTraderDashboard';
 
 const Dashboard = ({ signals, activeSignals, performance, marketData, isConnected, config }) => {
   const [stats, setStats] = useState({
