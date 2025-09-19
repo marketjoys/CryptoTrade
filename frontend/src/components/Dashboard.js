@@ -4,7 +4,7 @@ import PerformanceCard from './PerformanceCard';
 import MarketOverview from './MarketOverview';
 import GroqStats from './GroqStats';
 
-const Dashboard = ({ signals, activeSignals, performance, marketData, isConnected }) => {
+const Dashboard = ({ signals, activeSignals, performance, marketData, isConnected, config }) => {
   const [stats, setStats] = useState({
     totalSignals: 0,
     activeSignals: 0,
