@@ -516,7 +516,7 @@ class QuantumFlowDetector:
         return None
     
     async def _detect_liquidity_vacuum(self, data: Dict) -> Optional[QuantumFlowSignal]:
-        """Detect liquidity vacuum conditions"""
+        """Detect liquidity vacuum conditions with AI analysis"""
         try:
             liquidity_metrics = data.get('liquidity_metrics', {})
             
@@ -526,6 +526,9 @@ class QuantumFlowDetector:
             
             # Detect thin liquidity conditions
             if spread > 0.002 and total_depth < 50000 and imbalance > 0.3:
+                # Get AI analysis for this signal
+                ai_analysis = await self._get_ai_analysis(data, "LIQUIDITY_VACUUM")
+                
                 return QuantumFlowSignal(
                     symbol=data.get('symbol', 'UNKNOWN'),
                     timestamp=datetime.utcnow(),
@@ -536,12 +539,16 @@ class QuantumFlowDetector:
                     risk_factor=0.06,
                     flow_strength=spread,
                     network_effect=0.6,
-                    ai_conviction="MODERATE",
+                    ai_conviction=ai_analysis.get('ai_conviction', 'MODERATE'),
                     exit_strategy={
                         'type': 'LIQUIDITY_RESTORATION',
                         'stop_loss': 0.04,
                         'profit_target': 0.08,
-                        'time_limit': 1
+                        'time_limit': 1,
+                        'ai_reasoning': ai_analysis.get('technical_reasoning', 'Liquidity vacuum detected'),
+                        'market_sentiment': ai_analysis.get('market_sentiment', 'NEUTRAL'),
+                        'risk_assessment': ai_analysis.get('risk_assessment', 'Higher risk due to low liquidity'),
+                        'groq_analysis': ai_analysis
                     },
                     exchange=data.get('exchange', 'coinbase')
                 )
