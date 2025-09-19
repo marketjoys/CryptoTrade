@@ -558,7 +558,7 @@ class QuantumFlowDetector:
         return None
     
     async def _detect_momentum_spiral(self, data: Dict) -> Optional[QuantumFlowSignal]:
-        """Detect momentum spiral patterns"""
+        """Detect momentum spiral patterns with AI analysis"""
         try:
             price_metrics = data.get('price_metrics', {})
             volume_profile = data.get('volume_profile', {})
@@ -576,6 +576,9 @@ class QuantumFlowDetector:
                 
                 spiral_strength = momentum * volume_trend * buy_ratio
                 
+                # Get AI analysis for this signal
+                ai_analysis = await self._get_ai_analysis(data, "MOMENTUM_SPIRAL")
+                
                 return QuantumFlowSignal(
                     symbol=data.get('symbol', 'UNKNOWN'),
                     timestamp=datetime.utcnow(),
@@ -586,12 +589,16 @@ class QuantumFlowDetector:
                     risk_factor=0.07,
                     flow_strength=spiral_strength,
                     network_effect=0.8,
-                    ai_conviction="HIGH" if spiral_strength > 0.05 else "MODERATE",
+                    ai_conviction=ai_analysis.get('ai_conviction', 'HIGH' if spiral_strength > 0.05 else 'MODERATE'),
                     exit_strategy={
                         'type': 'MOMENTUM_EXHAUSTION',
                         'stop_loss': 0.04,
                         'profit_target': 0.10,
-                        'time_limit': 2
+                        'time_limit': 2,
+                        'ai_reasoning': ai_analysis.get('technical_reasoning', 'Strong momentum spiral detected'),
+                        'market_sentiment': ai_analysis.get('market_sentiment', 'BULLISH'),
+                        'risk_assessment': ai_analysis.get('risk_assessment', 'Momentum reversal risk'),
+                        'groq_analysis': ai_analysis
                     },
                     exchange=data.get('exchange', 'coinbase')
                 )
