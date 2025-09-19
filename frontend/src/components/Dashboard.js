@@ -128,6 +128,16 @@ const Dashboard = ({ signals, activeSignals, performance, marketData, isConnecte
           >
             💼 Portfolio
           </button>
+          <button
+            onClick={() => setCurrentView('autotrader')}
+            className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
+              currentView === 'autotrader'
+                ? 'border-blue-500 text-blue-400'
+                : 'border-transparent text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            🤖 AutoTrader
+          </button>
         </div>
       </div>
 
