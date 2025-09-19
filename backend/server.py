@@ -1028,6 +1028,21 @@ class QuantumFlowEngine:
                 f"Confidence: {signal.confidence:.1%} | Target: {signal.target_multiplier:.2f}x"
             )
             
+            # AutoTrader evaluation and execution
+            global auto_trader
+            if auto_trader:
+                evaluation = await auto_trader.evaluate_signal(signal)
+                
+                if evaluation["auto_trade"]:
+                    # Execute auto-trade
+                    auto_result = await auto_trader.execute_auto_trade(signal)
+                    if auto_result.get("success"):
+                        logger.info(f"🤖 AUTO-TRADE SUCCESS: {evaluation['reason']}")
+                    else:
+                        logger.warning(f"🤖 AUTO-TRADE FAILED: {auto_result.get('message', 'Unknown error')}")
+                else:
+                    logger.debug(f"🤖 AUTO-TRADE SKIPPED: {evaluation['reason']}")
+            
             # Broadcast to WebSocket clients
             await self._broadcast_signal(signal)
             
