@@ -225,6 +225,21 @@ backend:
         - agent: "testing"
         - comment: "✅ MARKET DATA INTEGRATION CONFIRMED: Real-time Coinbase API integration working perfectly. All tracked symbols returning live data: BTC-USD ($116,907.99), ETH-USD ($4,539.72), XRP-USD ($3.03). Portfolio positions updating with current market prices, P&L calculations accurate and real-time. No mock data used - all prices from live Coinbase API calls."
 
+  - task: "Portfolio API endpoints for signal following"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "COMPLETED: Added portfolio management endpoints: GET /api/portfolio, POST /api/portfolio/follow/{signal_id}, POST /api/portfolio/watch/{signal_id}, POST /api/portfolio/update. All endpoints integrate with MockPortfolioManager for proper position management."
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTED: All portfolio endpoints working correctly. GET /api/portfolio returns $10K demo portfolio, follow/watch endpoints create appropriate positions, update endpoint refreshes positions with real market data. Risk management enforced properly."
+
 frontend:
   - task: "Enhanced MarketOverview with XRP and loading states"
     implemented: true
