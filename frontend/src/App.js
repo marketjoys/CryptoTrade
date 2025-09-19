@@ -10,6 +10,7 @@ import Performance from "./components/Performance";
 import MarketData from "./components/MarketData";
 import Settings from "./components/Settings";
 import Navbar from "./components/Navbar";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
