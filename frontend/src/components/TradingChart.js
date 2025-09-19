@@ -162,41 +162,12 @@ const TradingChart = ({ symbol, signals = [], onSymbolChange }) => {
       return;
     }
 
-    console.log(`🎯 Adding markers for ${signalsToAdd.length} signals`);
-
-    const markers = signalsToAdd
-      .filter(signal => signal.symbol === currentSymbol)
-      .map(signal => {
-        const signalColors = {
-          'WHALE_ACCUMULATION': '#3b82f6',
-          'LIQUIDITY_VACUUM': '#8b5cf6',
-          'MOMENTUM_SPIRAL': '#10b981',
-          'VOLUME_ANOMALY': '#f59e0b'
-        };
-
-        const signalIcons = {
-          'WHALE_ACCUMULATION': '🐋',
-          'LIQUIDITY_VACUUM': '💫',
-          'MOMENTUM_SPIRAL': '🌪️',
-          'VOLUME_ANOMALY': '📊'
-        };
-
-        return {
-          time: Math.floor(new Date(signal.timestamp).getTime() / 1000),
-          position: 'belowBar',
-          color: signalColors[signal.flow_type] || '#6b7280',
-          shape: 'arrowUp',
-          text: `${signalIcons[signal.flow_type] || '📈'} ${signal.flow_type} (${(signal.confidence * 100).toFixed(0)}%)`,
-        };
-      });
-
-    try {
-      console.log(`🔧 Setting ${markers.length} markers on candlestick series`);
-      candleSeries.current.setMarkers(markers);
-      console.log('✅ Markers set successfully');
-    } catch (error) {
-      console.error('❌ Error setting markers:', error);
-    }
+    console.log(`🎯 Signals available for ${currentSymbol}: ${signalsToAdd.filter(s => s.symbol === currentSymbol).length}`);
+    
+    // TODO: Implement markers using v5 plugin system 
+    // For now, markers are disabled until plugin implementation
+    // The old setMarkers API is not available in v5
+    console.log('📝 Markers temporarily disabled - will implement v5 plugin system');
   };
 
   const handleSymbolChange = (newSymbol) => {
