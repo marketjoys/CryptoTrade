@@ -1558,15 +1558,53 @@ async def watch_signal(signal_id: str, user_id: str = "demo_user"):
     result = await portfolio_manager.watch_signal(signal, user_id)
     return result
 
-@api_router.post("/portfolio/update")
-async def update_portfolio_positions(user_id: str = "demo_user"):
-    """Update all portfolio positions with current prices"""
-    if not portfolio_manager:
-        raise HTTPException(status_code=500, detail="Portfolio manager not available")
-    
-    await portfolio_manager.update_positions(user_id)
-    portfolio = await portfolio_manager.get_or_create_portfolio(user_id)
-    return {"message": "Portfolio updated successfully", "portfolio": portfolio}
+# AutoTrader API endpoints
+@api_router.get("/autotrader/status")
+async def get_autotrader_status():
+    """Get AutoTrader current status and configuration"""
+    global auto_trader
+    if auto_trader:
+        return auto_trader.get_status()
+    raise HTTPException(status_code=500, detail="AutoTrader not available")
+
+@api_router.post("/autotrader/config")
+async def update_autotrader_config(config: AutoTraderConfig):
+    """Update AutoTrader configuration"""
+    global auto_trader
+    if auto_trader:
+        result = auto_trader.update_config(config)
+        return result
+    raise HTTPException(status_code=500, detail="AutoTrader not available")
+
+@api_router.post("/autotrader/enable")
+async def enable_autotrader():
+    """Enable AutoTrader"""
+    global auto_trader
+    if auto_trader:
+        auto_trader.config.enabled = True
+        return {"message": "AutoTrader enabled", "enabled": True}
+    raise HTTPException(status_code=500, detail="AutoTrader not available")
+
+@api_router.post("/autotrader/disable")
+async def disable_autotrader():
+    """Disable AutoTrader"""
+    global auto_trader
+    if auto_trader:
+        auto_trader.config.enabled = False
+        return {"message": "AutoTrader disabled", "enabled": False}
+    raise HTTPException(status_code=500, detail="AutoTrader not available")
+
+@api_router.get("/autotrader/positions")
+async def get_autotrader_positions():
+    """Get AutoTrader active positions"""
+    global auto_trader
+    if auto_trader:
+        return {
+            "active_positions": auto_trader.active_auto_positions,
+            "total_risk": auto_trader.total_auto_risk,
+            "count": len(auto_trader.active_auto_positions)
+        }
+    raise HTTPException(status_code=500, detail="AutoTrader not available")
 
 @api_router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
