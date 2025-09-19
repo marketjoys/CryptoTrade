@@ -276,6 +276,11 @@ class MockPortfolioManager:
         except Exception as e:
             logger.error(f"Error updating positions: {e}")
 
+# Global variables for Quantum Flow Engine
+quantum_engine = None
+portfolio_manager = None
+active_connections: List[WebSocket] = []
+
 class RealTimeDataCollector:
     """Enhanced data collector for crypto markets"""
     
