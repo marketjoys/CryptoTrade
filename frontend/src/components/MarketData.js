@@ -268,28 +268,41 @@ const MarketData = ({ marketData, fetchMarketData, config }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedData.trades.slice(0, 10).map((trade, index) => (
-                      <tr key={index} className="border-b border-gray-700">
-                        <td className="py-2 text-gray-300">
-                          {new Date(trade.timestamp).toLocaleTimeString()}
-                        </td>
-                        <td className="py-2 text-right font-mono text-white">
-                          ${trade.price.toFixed(2)}
-                        </td>
-                        <td className="py-2 text-right font-mono text-white">
-                          {trade.amount.toFixed(4)}
-                        </td>
-                        <td className="py-2 text-center">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            trade.side === 'buy' 
-                              ? 'bg-green-600 text-green-100' 
-                              : 'bg-red-600 text-red-100'
-                          }`}>
-                            {trade.side?.toUpperCase()}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                    {selectedData.trades?.slice(0, 10).map((trade, index) => {
+                      // Safety checks for trade object
+                      if (!trade || typeof trade !== 'object') return null;
+                      
+                      const timestamp = trade.timestamp;
+                      const price = Number(trade.price);
+                      const amount = Number(trade.amount);
+                      const side = trade.side;
+                      
+                      // Validate all required fields
+                      if (!timestamp || isNaN(price) || isNaN(amount) || !side) return null;
+                      
+                      return (
+                        <tr key={index} className="border-b border-gray-700">
+                          <td className="py-2 text-gray-300">
+                            {new Date(timestamp).toLocaleTimeString()}
+                          </td>
+                          <td className="py-2 text-right font-mono text-white">
+                            ${price.toFixed(2)}
+                          </td>
+                          <td className="py-2 text-right font-mono text-white">
+                            {amount.toFixed(4)}
+                          </td>
+                          <td className="py-2 text-center">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              side === 'buy' 
+                                ? 'bg-green-600 text-green-100' 
+                                : 'bg-red-600 text-red-100'
+                            }`}>
+                              {String(side).toUpperCase()}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    }).filter(Boolean)}
                   </tbody>
                 </table>
               </div>
