@@ -146,6 +146,8 @@ backend:
         - working: true
         - agent: "testing"
         - comment: "✅ REAL-TIME SIGNAL PROCESSING VERIFIED: Signal generation working with 9 active signals, all high-confidence (≥0.8). AutoTrader integration confirmed - signals trigger automatic evaluation and position creation when criteria met. Found 7 signals meeting AutoTrader confidence threshold (≥0.9), with 1 active auto-position for ADA-USD. Real-time processing includes AI analysis via Groq API for market sentiment and conviction assessment."
+
+  - task: "Mock Portfolio Management System"
     implemented: true
     working: true
     file: "/app/backend/server.py"
@@ -159,6 +161,9 @@ backend:
         - working: true
         - agent: "testing"
         - comment: "✅ TESTED: Mock portfolio system fully functional. Portfolio creation works ($10K initial balance), signal following creates proper positions with risk management, signal watching creates WATCHING positions with 0 quantity, portfolio updates integrate with real Coinbase market data."
+        - working: true
+        - agent: "testing"
+        - comment: "✅ MOCK PORTFOLIO RE-VERIFIED: Demo portfolio with $10,000 initial balance working perfectly. Signal following workflow creates active positions with proper risk management (10% max position size, 2% risk per trade). Signal watching creates WATCHING positions with 0 quantity and no financial commitment. Portfolio updates integrate with real-time Coinbase market data showing live P&L calculations (ETH position: -$0.37, -0.04%)."
         
   - task: "Integrate Groq API for signal analysis"
     implemented: true
