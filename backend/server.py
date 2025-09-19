@@ -605,14 +605,16 @@ class QuantumFlowDetector:
             
             # Detect thin liquidity conditions
             if spread > 0.002 and total_depth < 50000 and imbalance > 0.3:
-                # Get AI analysis for this signal
-                ai_analysis = await self._get_ai_analysis(data, "LIQUIDITY_VACUUM")
+                confidence = 0.82
+                
+                # Get AI analysis for this signal - only if confidence is high enough
+                ai_analysis = await self._get_ai_analysis(data, "LIQUIDITY_VACUUM", confidence)
                 
                 return QuantumFlowSignal(
                     symbol=data.get('symbol', 'UNKNOWN'),
                     timestamp=datetime.utcnow(),
                     flow_type="LIQUIDITY_VACUUM",
-                    confidence=0.82,
+                    confidence=confidence,
                     entry_price=data.get('current_price', 0),
                     target_multiplier=1.05 + min(0.1, spread * 50),
                     risk_factor=0.06,
