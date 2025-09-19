@@ -656,15 +656,16 @@ class QuantumFlowDetector:
                 buy_ratio > 0.6):
                 
                 spiral_strength = momentum * volume_trend * buy_ratio
+                confidence = min(0.9, 0.75 + spiral_strength * 2)
                 
-                # Get AI analysis for this signal
-                ai_analysis = await self._get_ai_analysis(data, "MOMENTUM_SPIRAL")
+                # Get AI analysis for this signal - only if confidence is high enough
+                ai_analysis = await self._get_ai_analysis(data, "MOMENTUM_SPIRAL", confidence)
                 
                 return QuantumFlowSignal(
                     symbol=data.get('symbol', 'UNKNOWN'),
                     timestamp=datetime.utcnow(),
                     flow_type="MOMENTUM_SPIRAL",
-                    confidence=min(0.9, 0.75 + spiral_strength * 2),
+                    confidence=confidence,
                     entry_price=data.get('current_price', 0),
                     target_multiplier=1.06 + min(0.12, spiral_strength * 5),
                     risk_factor=0.07,
