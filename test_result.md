@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Sync up with the codebase to understand completely. Check how frequently Groq API is called. While signals are generated add Groq API key comments and reasons for those signals. Add XRP in tracking system and also check in dashboard market overview show loading..."
+user_problem_statement: "Sync with the codebase and Tell what is this app. also check how confident are you that signal genrated are correct and will make money. I see Groq calls made very frequently. I want Groq APi call made only when Signals are generated to verify it and ensure its not false call. Also Implement Live Interactive graphs based on data collected from calls. When i click on follow up or view nothing happens"
 
 backend:
   - task: "Integrate Groq API for signal analysis"
