@@ -3,6 +3,7 @@ import sys
 import json
 from datetime import datetime
 import time
+import random
 
 class QuantumFlowAPITester:
     def __init__(self, base_url="https://groq-optimizer.preview.emergentagent.com"):
