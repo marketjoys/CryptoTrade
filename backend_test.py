@@ -231,7 +231,8 @@ def main():
     tester.test_market_data_invalid_symbol()
     tester.test_invalid_endpoint()
     
-    # Print final summary
+    print("\n⚙️ Testing Configuration Updates...")
+    tester.test_config_update()
     tester.print_summary()
     
     # Return appropriate exit code
