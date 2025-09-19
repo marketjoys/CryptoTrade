@@ -44,6 +44,8 @@ db = client[os.environ['DB_NAME']]
 
 # Global variables for Quantum Flow Engine
 quantum_engine = None
+portfolio_manager = None
+auto_trader = None
 active_connections: List[WebSocket] = []
 
 # Pydantic Models
