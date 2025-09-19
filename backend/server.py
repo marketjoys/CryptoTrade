@@ -334,20 +334,85 @@ class QuantumFlowDetector:
             logger.info("✅ Initialized Groq AI client with optimization (min confidence: {:.1%}, cache: {}s)".format(
                 self.min_confidence_for_groq, self.groq_cache_ttl))
     
-    async def _get_ai_analysis(self, signal_data: Dict, flow_type: str) -> Dict:
-        """Get comprehensive AI analysis from Groq for signal reasoning"""
+    def _should_call_groq_api(self, signal_data: Dict, flow_type: str, confidence: float) -> bool:
+        """Determine if Groq API should be called based on optimization rules"""
         if not self.groq_client:
-            return {
-                'ai_conviction': 'MODERATE',
-                'market_sentiment': 'NEUTRAL',
-                'technical_reasoning': f'{flow_type} detected based on mathematical analysis',
-                'risk_assessment': 'Standard risk parameters applied',
-                'groq_api_called': False
-            }
+            return False
+            
+        # Only call for high-confidence signals
+        if confidence < self.min_confidence_for_groq:
+            return False
+            
+        # Check rate limiting
+        now = datetime.utcnow()
+        minute_key = now.strftime('%Y-%m-%d-%H-%M')
+        
+        if minute_key not in self.groq_rate_limit:
+            self.groq_rate_limit = {minute_key: 0}  # Reset counter for new minute
+            
+        if self.groq_rate_limit[minute_key] >= self.max_groq_calls_per_minute:
+            logger.warning(f"⚠️ Groq API rate limit reached for minute {minute_key}")
+            return False
+            
+        # Check cache
+        symbol = signal_data.get('symbol', 'UNKNOWN')
+        cache_key = f"{symbol}_{flow_type}_{minute_key}"
+        
+        if cache_key in self.groq_cache:
+            cache_time, cached_analysis = self.groq_cache[cache_key]
+            if (now - cache_time).total_seconds() < self.groq_cache_ttl:
+                logger.info(f"🔄 Using cached Groq analysis for {symbol} {flow_type}")
+                return False  # Use cached version
+                
+        return True
+    
+    def _get_cached_analysis(self, signal_data: Dict, flow_type: str) -> Optional[Dict]:
+        """Get cached analysis if available"""
+        symbol = signal_data.get('symbol', 'UNKNOWN') 
+        now = datetime.utcnow()
+        minute_key = now.strftime('%Y-%m-%d-%H-%M')
+        cache_key = f"{symbol}_{flow_type}_{minute_key}"
+        
+        if cache_key in self.groq_cache:
+            cache_time, cached_analysis = self.groq_cache[cache_key]
+            if (now - cache_time).total_seconds() < self.groq_cache_ttl:
+                cached_analysis['groq_api_called'] = False
+                cached_analysis['cached'] = True
+                return cached_analysis
+                
+        return None
+
+    async def _get_ai_analysis(self, signal_data: Dict, flow_type: str, confidence: float) -> Dict:
+        """Get comprehensive AI analysis from Groq for signal reasoning with optimization"""
+        
+        # Default fallback analysis
+        fallback_analysis = {
+            'ai_conviction': 'MODERATE',
+            'market_sentiment': 'NEUTRAL',
+            'technical_reasoning': f'{flow_type} detected based on mathematical analysis',
+            'risk_assessment': 'Standard risk parameters applied',
+            'groq_api_called': False
+        }
+        
+        if not self.groq_client:
+            return fallback_analysis
+            
+        # Check if we should call Groq API
+        if not self._should_call_groq_api(signal_data, flow_type, confidence):
+            # Try to get cached version
+            cached = self._get_cached_analysis(signal_data, flow_type)
+            if cached:
+                return cached
+            return fallback_analysis
         
         try:
+            # Update counters
             self.groq_call_count += 1
             self.last_groq_call_time = datetime.utcnow()
+            
+            # Update rate limiting
+            minute_key = datetime.utcnow().strftime('%Y-%m-%d-%H-%M')
+            self.groq_rate_limit[minute_key] = self.groq_rate_limit.get(minute_key, 0) + 1
             
             # Prepare market data context for AI analysis
             symbol = signal_data.get('symbol', 'UNKNOWN')
