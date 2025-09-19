@@ -143,10 +143,10 @@ const MarketData = ({ marketData, fetchMarketData, config }) => {
 
                 <div className="text-center">
                   <div className={`text-2xl font-bold mb-1 ${
-                    selectedData.ticker?.percentage >= 0 ? 'text-green-400' : 'text-red-400'
+                    (selectedData.ticker?.percentage !== undefined && selectedData.ticker?.percentage !== null && selectedData.ticker.percentage >= 0) ? 'text-green-400' : 'text-red-400'
                   }`}>
-                    {selectedData.ticker?.percentage 
-                      ? `${selectedData.ticker.percentage >= 0 ? '+' : ''}${selectedData.ticker.percentage.toFixed(2)}%`
+                    {selectedData.ticker?.percentage !== undefined && selectedData.ticker?.percentage !== null
+                      ? `${selectedData.ticker.percentage >= 0 ? '+' : ''}${Number(selectedData.ticker.percentage).toFixed(2)}%`
                       : 'N/A'
                     }
                   </div>
@@ -155,8 +155,8 @@ const MarketData = ({ marketData, fetchMarketData, config }) => {
 
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-400 mb-1">
-                    {selectedData.ticker?.baseVolume 
-                      ? `${(selectedData.ticker.baseVolume / 1000000).toFixed(1)}M`
+                    {selectedData.ticker?.baseVolume !== undefined && selectedData.ticker?.baseVolume !== null
+                      ? `${(Number(selectedData.ticker.baseVolume) / 1000000).toFixed(1)}M`
                       : 'N/A'
                     }
                   </div>
