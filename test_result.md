@@ -379,9 +379,9 @@ metadata:
 
 test_plan:
   current_focus:
+    - "AutoTrader System Implementation"
+    - "Real-time Signal Processing with AutoTrader Integration"
     - "Mock Portfolio API Implementation"
-    - "Portfolio Risk Management System"
-    - "Real-time Market Data Integration"
     - "Groq API Optimization Testing"
   stuck_tasks: []
   test_all: false
