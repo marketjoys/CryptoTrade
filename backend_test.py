@@ -280,6 +280,10 @@ def main():
     
     print("\n💹 Testing Market Data...")
     tester.test_market_data_endpoint()
+    tester.test_xrp_market_data_endpoint()
+    
+    print("\n🤖 Testing Groq AI Integration...")
+    tester.test_groq_stats_endpoint()
     
     print("\n🚫 Testing Error Handling...")
     tester.test_market_data_invalid_symbol()
