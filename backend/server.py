@@ -252,7 +252,14 @@ class RealTimeDataCollector:
             }
         except Exception as e:
             logger.error(f"Error calculating volume profile: {e}")
-            return {}
+            return {
+                'total_volume': 0,
+                'buy_volume': 0,
+                'sell_volume': 0,
+                'buy_ratio': 0.5,
+                'large_trades_volume': 0,
+                'avg_trade_size': 0
+            }
     
     def _calculate_price_metrics(self, ohlcv: List) -> Dict:
         """Calculate price metrics from OHLCV data"""
