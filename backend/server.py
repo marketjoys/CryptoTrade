@@ -141,7 +141,13 @@ class RealTimeDataCollector:
                 return_exceptions=True
             )
             
-            # Calculate derived metrics
+            # Clean up exception objects before processing
+            ticker = ticker if not isinstance(ticker, Exception) else {}
+            orderbook = orderbook if not isinstance(orderbook, Exception) else {'bids': [], 'asks': []}
+            trades = trades if not isinstance(trades, Exception) else []
+            ohlcv = ohlcv if not isinstance(ohlcv, Exception) else []
+            
+            # Calculate derived metrics with clean data
             liquidity_metrics = self._calculate_liquidity_metrics(orderbook)
             volume_profile = self._calculate_volume_profile(trades)
             price_metrics = self._calculate_price_metrics(ohlcv)
