@@ -161,7 +161,21 @@ class RealTimeDataCollector:
             }
         except Exception as e:
             logger.error(f"Error collecting data for {symbol}: {e}")
-            return {}
+            # Return a well-structured empty response instead of empty dict
+            return {
+                'symbol': symbol,
+                'current_price': 0,
+                'ticker': {},
+                'orderbook': {'bids': [], 'asks': []},
+                'trades': [],
+                'ohlcv': [],
+                'liquidity_metrics': {},
+                'volume_profile': {},
+                'price_metrics': {},
+                'timestamp': datetime.utcnow(),
+                'exchange': exchange_id,
+                'error': 'Failed to fetch market data'
+            }
     
     def _calculate_liquidity_metrics(self, orderbook: Dict) -> Dict:
         """Calculate liquidity metrics from orderbook"""
