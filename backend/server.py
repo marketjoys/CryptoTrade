@@ -987,6 +987,14 @@ async def update_config(config: TradingConfig):
         return {"message": "Configuration updated successfully"}
     raise HTTPException(status_code=500, detail="Engine not available")
 
+@api_router.get("/groq-stats")
+async def get_groq_stats():
+    """Get Groq API usage statistics"""
+    if quantum_engine and quantum_engine.detector:
+        stats = quantum_engine.detector.get_groq_api_stats()
+        return stats
+    return {"total_calls": 0, "last_call_time": None, "calls_per_minute": 0}
+
 @api_router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """WebSocket endpoint for real-time updates"""
