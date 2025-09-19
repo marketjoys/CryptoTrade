@@ -1182,8 +1182,9 @@ class QuantumFlowEngine:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    global quantum_engine
+    global quantum_engine, portfolio_manager
     quantum_engine = QuantumFlowEngine()
+    portfolio_manager = MockPortfolioManager()
     
     # Start analysis in background
     asyncio.create_task(quantum_engine.start_analysis())
